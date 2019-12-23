@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,24 @@
  * limitations under the License.
  */
 
-
-
-
-
 package io.restassured.internal.path.json.mapping
 
-import io.restassured.mapper.ObjectDeserializationContext
-import io.restassured.mapper.factory.GsonObjectMapperFactory
+import io.restassured.common.mapper.ObjectDeserializationContext
+import io.restassured.path.json.mapper.factory.GsonObjectMapperFactory
 import io.restassured.path.json.mapping.JsonPathObjectDeserializer
 
-import static io.restassured.internal.assertion.AssertParameter.notNull
+import static io.restassured.internal.common.assertion.AssertParameter.notNull
 
 class JsonPathGsonObjectDeserializer implements JsonPathObjectDeserializer {
-    private final GsonObjectMapperFactory factory
+  private final GsonObjectMapperFactory factory
 
-    JsonPathGsonObjectDeserializer(GsonObjectMapperFactory factory) {
-        notNull(factory, "GsonObjectMapperFactory")
-        this.factory = factory;
-    }
+  JsonPathGsonObjectDeserializer(GsonObjectMapperFactory factory) {
+    notNull(factory, "GsonObjectMapperFactory")
+    this.factory = factory;
+  }
 
-    @Override
-    def <T> T deserialize(ObjectDeserializationContext ctx) {
-        return factory.create(ctx.type, ctx.charset).fromJson(ctx.dataToDeserialize.asString(), ctx.type) as T;
-    }
+  @Override
+  def deserialize(ObjectDeserializationContext ctx) {
+    factory.create(ctx.type, ctx.charset).fromJson(ctx.dataToDeserialize.asString(), ctx.type)
+  }
 }

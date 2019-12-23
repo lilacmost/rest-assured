@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,9 +31,9 @@ public class RootPathITest extends WithJetty {
     public ExpectedException exception = ExpectedException.none();
 
     @Test
-    public void specifyingRootPathInExpectationAddsTheRootPathForEachSubsequentBodyExpectation() throws Exception {
+    public void specifyingRootPathInExpectationAddsTheRootPathForEachSubsequentBodyExpectation() {
         expect().
-                 root("store.book").
+                rootPath("store.book").
                  body("category.size()", equalTo(4)).
                  body("author.size()", equalTo(4)).
         when().
@@ -41,9 +41,9 @@ public class RootPathITest extends WithJetty {
     }
 
     @Test
-    public void specifyingRootPathThatEndsWithDotAndBodyThatEndsWithDotWorks() throws Exception {
+    public void specifyingRootPathThatEndsWithDotAndBodyThatEndsWithDotWorks() {
         expect().
-                 root("store.book.").
+                rootPath("store.book.").
                  body(".category.size()", equalTo(4)).
                  body(".author.size()", equalTo(4)).
         when().
@@ -51,9 +51,9 @@ public class RootPathITest extends WithJetty {
     }
 
     @Test
-    public void specifyingRootPathThatEndsWithDotAndBodyThatDoesntEndWithDotWorks() throws Exception {
+    public void specifyingRootPathThatEndsWithDotAndBodyThatDoesntEndWithDotWorks() {
         expect().
-                 root("store.book.").
+                rootPath("store.book.").
                  body("category.size()", equalTo(4)).
                  body("author.size()", equalTo(4)).
         when().
@@ -61,9 +61,9 @@ public class RootPathITest extends WithJetty {
     }
 
     @Test
-    public void specifyingRootPathThatDoesntEndWithDotAndBodyThatEndsWithDotWorks() throws Exception {
+    public void specifyingRootPathThatDoesntEndWithDotAndBodyThatEndsWithDotWorks() {
         expect().
-                 root("store.book").
+                rootPath("store.book").
                  body(".category.size()", equalTo(4)).
                  body(".author.size()", equalTo(4)).
         when().
@@ -71,37 +71,37 @@ public class RootPathITest extends WithJetty {
     }
 
     @Test
-    public void specifyingRootPathAndBodyThatStartsWithArrayIndexingWorks() throws Exception {
+    public void specifyingRootPathAndBodyThatStartsWithArrayIndexingWorks() {
         expect().
-                 root("store.book").
+                rootPath("store.book").
                  body("[0].category", either(equalTo("reference")).or(equalTo("fiction"))).
         when().
                 get("/jsonStore");
     }
 
     @Test
-    public void specifyingRootPathThatAndEmptyPathWorks() throws Exception {
+    public void specifyingRootPathThatAndEmptyPathWorks() {
         expect().
-                 root("store.book.category.size()").
+                rootPath("store.book.category.size()").
                  body("", equalTo(4)).
         when().
                  get("/jsonStore");
     }
 
     @Test
-    public void specifyingEmptyRootPathResetsToDefaultRootObject() throws Exception {
+    public void specifyingEmptyRootPathResetsToDefaultRootObject() {
         expect().
-                 rootPath("store.book").
+                rootPath("store.book").
                  body("category.size()", equalTo(4)).
                  body("author.size()", equalTo(4)).
-                 root("").
+                rootPath("").
                  body("store.book.category.size()", equalTo(4)).
         when().
                  get("/jsonStore");
     }
 
     @Test
-    public void whenNotSpecifyingExplicitRootPathThenDefaultRootPathIsUsed() throws Exception {
+    public void whenNotSpecifyingExplicitRootPathThenDefaultRootPathIsUsed() {
         rootPath = "store.book";
         try {
             expect().
@@ -115,7 +115,7 @@ public class RootPathITest extends WithJetty {
     }
 
     @Test
-    public void resetSetsRootPathToEmptyString() throws Exception {
+    public void resetSetsRootPathToEmptyString() {
         rootPath = "store.book";
 
         RestAssured.reset();
@@ -124,7 +124,7 @@ public class RootPathITest extends WithJetty {
     }
 
     @Test
-    public void specifyingRootPathWithBodyArgs() throws Exception {
+    public void specifyingRootPathWithBodyArgs() {
         expect().
                 rootPath("store.book.category[%d]").
                 body(withArgs(0), equalTo("reference")).
@@ -134,7 +134,7 @@ public class RootPathITest extends WithJetty {
     }
 
     @Test
-    public void specifyingRootPathWithMultipleBodyArgs() throws Exception {
+    public void specifyingRootPathWithMultipleBodyArgs() {
         final String category = "category";
         expect().
                 rootPath("store.book.%s[%d]").
@@ -145,20 +145,20 @@ public class RootPathITest extends WithJetty {
     }
 
     @Test
-    public void specifyingRootPathWithMultipleContentArguments() throws Exception {
+    public void specifyingRootPathWithMultipleContentArguments() {
         final String category = "category";
         expect().
                 rootPath("store.book.%s[%d]").
-                content(withArguments(category, 0), equalTo("reference")).
-                content(withArguments(category, 1), equalTo("fiction")).
+                body(withArgs(category, 0), equalTo("reference")).
+                body(withArgs(category, 1), equalTo("fiction")).
         when().
                 get("/jsonStore");
     }
 
     @Test
-    public void specifyingRootPathInMultiBodyAddsTheRootPathForEachExpectation() throws Exception {
+    public void specifyingRootPathInMultiBodyAddsTheRootPathForEachExpectation() {
         expect().
-                 root("store.book").
+                rootPath("store.book").
                  body(
                     "category.size()", equalTo(4),
                     "author.size()", equalTo(4)
@@ -168,10 +168,10 @@ public class RootPathITest extends WithJetty {
     }
 
     @Test
-    public void specifyingRootPathInMultiContentAddsTheRootPathForEachExpectation() throws Exception {
+    public void specifyingRootPathInMultiContentAddsTheRootPathForEachExpectation() {
         expect().
-                 root("store.book").
-                 content(
+                rootPath("store.book").
+                 body(
                     "category.size()", equalTo(4),
                     "author.size()", equalTo(4)
                  ).
@@ -180,10 +180,10 @@ public class RootPathITest extends WithJetty {
     }
 
     @Test
-    public void specifyingRootPathWithArguments() throws Exception {
+    public void specifyingRootPathWithArguments() {
         expect().
-                 root("store.%s", withArgs("book")).
-                 content(
+                 rootPath("store.%s", withArgs("book")).
+                 body(
                     "category.size()", equalTo(4),
                     "author.size()", equalTo(4)
                  ).
@@ -192,47 +192,47 @@ public class RootPathITest extends WithJetty {
     }
 
     @Test
-    public void appendingRootPathWithoutArgumentsWorks() throws Exception {
+    public void appendingRootPathWithoutArgumentsWorks() {
         expect().
-                 root("store.%s", withArgs("book")).
+                 rootPath("store.%s", withArgs("book")).
                  body("category.size()", equalTo(4)).
-                 appendRoot("author").
+                 appendRootPath("author").
                  body("size()", equalTo(4)).
         when().
                  get("/jsonStore");
     }
 
     @Test
-    public void appendingRootPathWithArgumentsWorks() throws Exception {
+    public void appendingRootPathWithArgumentsWorks() {
         expect().
-                 root("store.%s", withArgs("book")).
+                 rootPath("store.%s", withArgs("book")).
                  body("category.size()", equalTo(4)).
-                 appendRoot("%s.%s", withArgs("author", "size()")).
+                 appendRootPath("%s.%s", withArgs("author", "size()")).
                  body(withNoArgs(), equalTo(4)).
         when().
                  get("/jsonStore");
     }
 
     @Test
-    public void canAppendRootPathToEmptyRootPath() throws Exception {
+    public void canAppendRootPathToEmptyRootPath() {
         expect().
-                appendRoot("store.%s").
+                appendRootPath("store.%s").
                 body(withArgs("book.category.size()"), equalTo(4)).
         when().
                 get("/jsonStore");
     }
 
     @Test
-    public void usingBodyExpectationWithoutPath() throws Exception {
+    public void usingBodyExpectationWithoutPath() {
         expect().
-                 root("store.%s").
+                 rootPath("store.%s").
                  body(withArgs("book.category.size()"), equalTo(4)).
         when().
                  get("/jsonStore");
     }
 
     @Test
-    public void cannotUseBodyExpectationWithNoPathWhenRootPathIsEmpty() throws Exception {
+    public void cannotUseBodyExpectationWithNoPathWhenRootPathIsEmpty() {
         exception.expect(IllegalStateException.class);
         exception.expectMessage("Cannot specify arguments when root path is empty");
 
@@ -240,77 +240,91 @@ public class RootPathITest extends WithJetty {
     }
 
     @Test
-    public void cannotDetachRootPathToFromRootPath() throws Exception {
+    public void cannotDetachRootPathToFromRootPath() {
         exception.expect(IllegalStateException.class);
         exception.expectMessage("Cannot detach path when root path is empty");
 
-        expect().detachRoot("path");
+        expect().detachRootPath("path");
     }
 
     @Test
-    public void detachingRootPathWorksWithOldSyntax() throws Exception {
+    public void detachingRootPathWorksWithOldSyntax() {
         expect().
-                root("store.%s", withArgs("book")).
+                rootPath("store.%s", withArgs("book")).
                 body("category.size()", equalTo(4)).
-                detachRoot("book").
+                detachRootPath("book").
                 body("size()", equalTo(2)).
         when().
                 get("/jsonStore");
     }
 
     @Test
-    public void detachingRootPathWorksWithNewSyntax() throws Exception {
+    public void detachingRootPathWorksWithNewSyntax() {
         when().
                 get("/jsonStore").
         then().
-                root("store.%s", withArgs("book")).
+                rootPath("store.%s", withArgs("book")).
                 body("category.size()", equalTo(4)).
-                detachRoot("book").
+                detachRootPath("book").
                 body("size()", equalTo(2));
     }
 
     @Test
-    public void detachingRootPathWorksWhenSpecifyingDot() throws Exception {
+    public void detachingRootPathWorksWhenSpecifyingDot() {
         when().
                 get("/jsonStore").
         then().
-                root("store.%s", withArgs("book")).
+                rootPath("store.%s", withArgs("book")).
                 body("category.size()", equalTo(4)).
-                detachRoot(".book").
+                detachRootPath(".book").
                 body("size()", equalTo(2));
     }
 
     @Test
-    public void detachingRootPathThrowsISERootPathDoesntEndWithPathToDetach() throws Exception {
+    public void detachingRootPathThrowsISERootPathDoesntEndWithPathToDetach() {
         exception.expect(IllegalStateException.class);
         exception.expectMessage("Cannot detach path 'another' since root path 'store.book' doesn't end with 'another'.");
 
         when().
                 get("/jsonStore").
         then().
-                root("store.%s", withArgs("book")).
+                rootPath("store.%s", withArgs("book")).
                 body("category.size()", equalTo(4)).
-                detachRoot("another").
+                detachRootPath("another").
                 body("size()", equalTo(2));
     }
 
     @Test
-    public void supportsAppendingArgumentsDefinedInAppendRootAtALaterStage() throws Exception {
+    public void supportsAppendingArgumentsDefinedInAppendRootAtALaterStage() {
         when().
                  get("/jsonStore").
         then().
-                 root("store.%s", withArgs("book")).
+                 rootPath("store.%s", withArgs("book")).
                  body("category.size()", equalTo(4)).
-                 appendRoot("%s.%s", withArgs("author")).
+                 appendRootPath("%s.%s", withArgs("author")).
                  body(withArgs("size()"), equalTo(4));
     }
 
     @Test
-    public void supportsAppendingArgumentsDefinedInRootAtALaterStage() throws Exception {
+    public void supportsAppendingArgumentsDefinedInRootAtALaterStage() {
         when().
                  get("/jsonStore").
         then().
-                 root("store.%s.%s", withArgs("book")).
+                 rootPath("store.%s.%s", withArgs("book")).
                  body("size()", withArgs("category"), equalTo(4));
+    }
+
+    @Test
+    public void supportsAppendingArgumentsDefinedInRootAtALaterStageInMultiExpectationBlocks() {
+        when().
+                get("/jsonStore").
+        then().
+                rootPath("store.book.find { it.author == '%s' }").
+                body(
+                        "price", withArgs("Nigel Rees"), is(8.95f),
+                        "price", withArgs("Evelyn Waugh"), is(12.99f),
+                        "price", withArgs("J. R. R. Tolkien"), is(22.99f),
+                        "title", withArgs("J. R. R. Tolkien"), is("The Lord of the Rings")
+                );
     }
 }

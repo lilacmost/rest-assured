@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.emptyOrNullString;
 
 public class HeadITest extends WithJetty {
     @Rule
@@ -31,6 +31,6 @@ public class HeadITest extends WithJetty {
     @Test
     public void headSupportsStringBody() throws Exception {
         // Scalatra doesn't return body but it is indeed sent
-        given().body("a body").expect().body(isEmptyOrNullString()).when().head("/returnContentTypeAsBody");
+        given().body("a body").expect().body(emptyOrNullString()).when().head("/returnContentTypeAsBody");
     }
 }

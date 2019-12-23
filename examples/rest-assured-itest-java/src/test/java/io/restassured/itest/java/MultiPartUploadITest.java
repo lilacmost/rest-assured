@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import io.restassured.itest.java.objects.Message;
 import io.restassured.itest.java.support.MyEnum;
 import io.restassured.itest.java.support.WithJetty;
 import io.restassured.mapper.ObjectMapperType;
-import io.restassured.mapper.factory.DefaultJackson2ObjectMapperFactory;
+import io.restassured.path.json.mapper.factory.DefaultJackson2ObjectMapperFactory;
 import io.restassured.specification.RequestSpecification;
 import org.apache.commons.io.IOUtils;
 import org.junit.Rule;

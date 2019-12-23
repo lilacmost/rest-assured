@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import io.restassured.config.SessionConfig
 import io.restassured.http.Cookies
 import io.restassured.spi.AuthFilter
 
-import static io.restassured.internal.assertion.AssertParameter.notNull
+import static io.restassured.internal.common.assertion.AssertParameter.notNull
 
 class SpecificationMerger {
 
@@ -91,7 +91,7 @@ class SpecificationMerger {
     notNull thisOne, "Specification to merge"
     notNull with, "Specification to merge with"
 
-    thisOne.port = with.port
+    thisOne.@port = with.@port
     thisOne.baseUri = with.baseUri
     thisOne.basePath = with.basePath
     thisOne.requestParameters.putAll(with.requestParameters)

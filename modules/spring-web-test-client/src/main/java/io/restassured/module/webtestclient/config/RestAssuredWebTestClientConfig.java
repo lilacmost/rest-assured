@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2018 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,12 @@
 
 package io.restassured.module.webtestclient.config;
 
-import io.restassured.config.DecoderConfig;
-import io.restassured.config.EncoderConfig;
-import io.restassured.config.HeaderConfig;
-import io.restassured.config.JsonConfig;
-import io.restassured.config.LogConfig;
-import io.restassured.config.MultiPartConfig;
-import io.restassured.config.ObjectMapperConfig;
-import io.restassured.config.ParamConfig;
-import io.restassured.config.SessionConfig;
-import io.restassured.config.XmlConfig;
+import io.restassured.config.*;
 import io.restassured.module.spring.commons.config.AsyncConfig;
 import io.restassured.module.spring.commons.config.ClientConfig;
 import io.restassured.module.spring.commons.config.SpecificationConfig;
 
-import static io.restassured.internal.assertion.AssertParameter.notNull;
+import static io.restassured.internal.common.assertion.AssertParameter.notNull;
 
 /**
  * Main configuration for REST Assured WebTestClient that allows you to configure advanced settings.
@@ -56,13 +47,15 @@ public class RestAssuredWebTestClientConfig implements SpecificationConfig {
 	private final WebTestClientConfig webTestClientConfig;
 	private final MultiPartConfig multiPartConfig;
 	private final WebTestClientParamConfig paramConfig;
+	private final MatcherConfig matcherConfig;
+
 
 	/**
 	 * Create a new RestAssuredWebTestClientConfig with the default configurations.
 	 */
 	public RestAssuredWebTestClientConfig() {
 		this(new LogConfig(), new EncoderConfig(), new DecoderConfig(), new SessionConfig(), new ObjectMapperConfig(), new JsonConfig(), new XmlConfig(),
-				new HeaderConfig(), new AsyncConfig(), new MultiPartConfig(), new WebTestClientConfig(), new WebTestClientParamConfig());
+				new HeaderConfig(), new AsyncConfig(), new MultiPartConfig(), new WebTestClientConfig(), new WebTestClientParamConfig(), new MatcherConfig());
 	}
 
 	/**
@@ -79,7 +72,8 @@ public class RestAssuredWebTestClientConfig implements SpecificationConfig {
 	                                       AsyncConfig asyncConfig,
 	                                       MultiPartConfig multiPartConfig,
 	                                       WebTestClientConfig webTestClientConfig,
-	                                       WebTestClientParamConfig paramConfig) {
+	                                       WebTestClientParamConfig paramConfig,
+										   MatcherConfig matcherConfig) {
 		notNull(logConfig, "Log config");
 		notNull(encoderConfig, "Encoder config");
 		notNull(decoderConfig, "Decoder config");
@@ -91,6 +85,7 @@ public class RestAssuredWebTestClientConfig implements SpecificationConfig {
 		notNull(multiPartConfig, "MultiPart config");
 		notNull(webTestClientConfig, "webTestClient config");
 		notNull(paramConfig, "Param config");
+		notNull(matcherConfig, "Matcher config");
 		this.logConfig = logConfig;
 		this.encoderConfig = encoderConfig;
 		this.decoderConfig = decoderConfig;
@@ -103,6 +98,7 @@ public class RestAssuredWebTestClientConfig implements SpecificationConfig {
 		this.multiPartConfig = multiPartConfig;
 		this.webTestClientConfig = webTestClientConfig;
 		this.paramConfig = paramConfig;
+		this.matcherConfig = matcherConfig;
 	}
 
 	/**
@@ -152,7 +148,8 @@ public class RestAssuredWebTestClientConfig implements SpecificationConfig {
                 || sessionConfig.isUserConfigured() || objectMapperConfig.isUserConfigured()
                 || xmlConfig.isUserConfigured() || jsonConfig.isUserConfigured() || headerConfig.isUserConfigured()
                 || asyncConfig.isUserConfigured() || multiPartConfig.isUserConfigured()
-                || webTestClientConfig.isUserConfigured() || paramConfig.isUserConfigured();
+                || webTestClientConfig.isUserConfigured() || paramConfig.isUserConfigured()
+				|| matcherConfig.isUserConfigured();
 	}
 
 	/**
@@ -172,7 +169,7 @@ public class RestAssuredWebTestClientConfig implements SpecificationConfig {
 		notNull(encoderConfig, DecoderConfig.class);
 		return new RestAssuredWebTestClientConfig(logConfig, encoderConfig, decoderConfig, sessionConfig,
                 objectMapperConfig, jsonConfig, xmlConfig, headerConfig, asyncConfig, multiPartConfig,
-                webTestClientConfig, paramConfig);
+                webTestClientConfig, paramConfig, matcherConfig);
 	}
 
 	/**
@@ -192,7 +189,7 @@ public class RestAssuredWebTestClientConfig implements SpecificationConfig {
 		notNull(encoderConfig, "EncoderConfig");
 		return new RestAssuredWebTestClientConfig(logConfig, encoderConfig, decoderConfig, sessionConfig,
                 objectMapperConfig, jsonConfig, xmlConfig, headerConfig, asyncConfig, multiPartConfig,
-                webTestClientConfig, paramConfig);
+                webTestClientConfig, paramConfig, matcherConfig);
 	}
 
 	/**
@@ -212,7 +209,7 @@ public class RestAssuredWebTestClientConfig implements SpecificationConfig {
 		notNull(headerConfig, "HeaderConfig");
 		return new RestAssuredWebTestClientConfig(logConfig, encoderConfig, decoderConfig, sessionConfig,
                 objectMapperConfig, jsonConfig, xmlConfig, headerConfig, asyncConfig, multiPartConfig,
-                webTestClientConfig, paramConfig);
+                webTestClientConfig, paramConfig, matcherConfig);
 	}
 
 	/**
@@ -232,7 +229,7 @@ public class RestAssuredWebTestClientConfig implements SpecificationConfig {
 		notNull(jsonConfig, "JsonConfig");
 		return new RestAssuredWebTestClientConfig(logConfig, encoderConfig, decoderConfig, sessionConfig,
                 objectMapperConfig, jsonConfig, xmlConfig, headerConfig, asyncConfig, multiPartConfig,
-                webTestClientConfig, paramConfig);
+                webTestClientConfig, paramConfig, matcherConfig);
 	}
 
 	/**
@@ -252,7 +249,7 @@ public class RestAssuredWebTestClientConfig implements SpecificationConfig {
 		notNull(logConfig, "Log config");
         return new RestAssuredWebTestClientConfig(logConfig, encoderConfig, decoderConfig, sessionConfig,
                 objectMapperConfig, jsonConfig, xmlConfig, headerConfig, asyncConfig, multiPartConfig,
-                webTestClientConfig, paramConfig);
+                webTestClientConfig, paramConfig, matcherConfig);
 	}
 
 	/**
@@ -272,7 +269,7 @@ public class RestAssuredWebTestClientConfig implements SpecificationConfig {
 		notNull(objectMapperConfig, "Object mapper config");
         return new RestAssuredWebTestClientConfig(logConfig, encoderConfig, decoderConfig, sessionConfig,
                 objectMapperConfig, jsonConfig, xmlConfig, headerConfig, asyncConfig, multiPartConfig,
-                webTestClientConfig, paramConfig);
+                webTestClientConfig, paramConfig, matcherConfig);
 	}
 
 	/**
@@ -292,7 +289,7 @@ public class RestAssuredWebTestClientConfig implements SpecificationConfig {
 		notNull(sessionConfig, "Session config");
         return new RestAssuredWebTestClientConfig(logConfig, encoderConfig, decoderConfig, sessionConfig,
                 objectMapperConfig, jsonConfig, xmlConfig, headerConfig, asyncConfig, multiPartConfig,
-                webTestClientConfig, paramConfig);
+                webTestClientConfig, paramConfig, matcherConfig);
 	}
 
 	/**
@@ -312,7 +309,7 @@ public class RestAssuredWebTestClientConfig implements SpecificationConfig {
 		notNull(xmlConfig, "XmlConfig");
 		return new RestAssuredWebTestClientConfig(logConfig, encoderConfig, decoderConfig, sessionConfig,
                 objectMapperConfig, jsonConfig, xmlConfig, headerConfig, asyncConfig, multiPartConfig,
-                webTestClientConfig, paramConfig);
+                webTestClientConfig, paramConfig, matcherConfig);
 	}
 
 	/**
@@ -332,7 +329,7 @@ public class RestAssuredWebTestClientConfig implements SpecificationConfig {
 		notNull(asyncConfig, AsyncConfig.class);
 		return new RestAssuredWebTestClientConfig(logConfig, encoderConfig, decoderConfig, sessionConfig,
                 objectMapperConfig, jsonConfig, xmlConfig, headerConfig, asyncConfig, multiPartConfig,
-                webTestClientConfig, paramConfig);
+                webTestClientConfig, paramConfig, matcherConfig);
 	}
 
 	/**
@@ -352,7 +349,7 @@ public class RestAssuredWebTestClientConfig implements SpecificationConfig {
 		notNull(multiPartConfig, MultiPartConfig.class);
 		return new RestAssuredWebTestClientConfig(logConfig, encoderConfig, decoderConfig, sessionConfig,
                 objectMapperConfig, jsonConfig, xmlConfig, headerConfig, asyncConfig, multiPartConfig,
-                webTestClientConfig, paramConfig);
+                webTestClientConfig, paramConfig, matcherConfig);
 	}
 
 	@Override
@@ -377,7 +374,8 @@ public class RestAssuredWebTestClientConfig implements SpecificationConfig {
 	public RestAssuredWebTestClientConfig webTestClientConfig(WebTestClientConfig webTestClientConfig) {
 		notNull(webTestClientConfig, WebTestClientConfig.class);
 		return new RestAssuredWebTestClientConfig(logConfig, encoderConfig, decoderConfig, sessionConfig,
-				objectMapperConfig, jsonConfig, xmlConfig, headerConfig, asyncConfig, multiPartConfig, webTestClientConfig, paramConfig);
+				objectMapperConfig, jsonConfig, xmlConfig, headerConfig, asyncConfig, multiPartConfig,
+				webTestClientConfig, paramConfig, matcherConfig);
 	}
 
 	/**
@@ -408,7 +406,8 @@ public class RestAssuredWebTestClientConfig implements SpecificationConfig {
 	public RestAssuredWebTestClientConfig paramConfig(WebTestClientParamConfig paramConfig) {
 		notNull(paramConfig, MultiPartConfig.class);
 		return new RestAssuredWebTestClientConfig(logConfig, encoderConfig, decoderConfig, sessionConfig,
-				objectMapperConfig, jsonConfig, xmlConfig, headerConfig, asyncConfig, multiPartConfig, webTestClientConfig, paramConfig);
+				objectMapperConfig, jsonConfig, xmlConfig, headerConfig, asyncConfig, multiPartConfig,
+				webTestClientConfig, paramConfig, matcherConfig);
 	}
 
 	/**
@@ -416,5 +415,25 @@ public class RestAssuredWebTestClientConfig implements SpecificationConfig {
 	 */
 	public WebTestClientConfig getWebTestClientConfig() {
 		return webTestClientConfig;
+	}
+
+	/**
+	 * @return The MatcherConfig
+	 */
+	public MatcherConfig getMatcherConfig() {
+		return matcherConfig;
+	}
+
+	/**
+	 * Set the matcher config.
+	 *
+	 * @param matcherConfig The {@link MatcherConfig} to set
+	 * @return An updated RestAssuredWebTestClientConfig
+	 */
+	public RestAssuredWebTestClientConfig matcherConfig(MatcherConfig matcherConfig) {
+		notNull(matcherConfig, "Matcher config");
+		return new RestAssuredWebTestClientConfig(logConfig, encoderConfig, decoderConfig, sessionConfig,
+				objectMapperConfig, jsonConfig, xmlConfig, headerConfig, asyncConfig, multiPartConfig,
+				webTestClientConfig, paramConfig, matcherConfig);
 	}
 }

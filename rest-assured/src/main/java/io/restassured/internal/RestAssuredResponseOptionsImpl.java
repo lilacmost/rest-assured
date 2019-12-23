@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package io.restassured.internal;
 
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.config.DecoderConfig;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.http.Cookie;
@@ -158,31 +159,46 @@ public class RestAssuredResponseOptionsImpl<R extends ResponseOptions<R>> implem
     }
 
     public R response() {
+        //noinspection unchecked
         return (R) this;
     }
 
+    @Override
     public <T> T as(Class<T> cls) {
-        return groovyResponse.as(cls, this);
+        //noinspection unchecked - Maven doesn't compile without this cast!
+        return (T) groovyResponse.as(cls, this);
     }
 
+
     public <T> T as(Class<T> cls, ObjectMapperType mapperType) {
-        return groovyResponse.as(cls, mapperType, this);
+        //noinspection unchecked - Maven doesn't compile without this cast!
+        return (T) groovyResponse.as(cls, mapperType, this);
     }
 
     public <T> T as(Class<T> cls, ObjectMapper mapper) {
-        return groovyResponse.as(cls, mapper);
+        //noinspection unchecked - Maven doesn't compile without this cast!
+        return (T) groovyResponse.as(cls, mapper);
+    }
+
+    @Override
+    public <T> T as(TypeRef<T> typeRef) {
+        //noinspection unchecked - Maven doesn't compile without this cast!
+        return (T) groovyResponse.as(typeRef, this);
     }
 
     public <T> T as(Type cls) {
-        return groovyResponse.as(cls, this);
+        //noinspection unchecked - Maven doesn't compile without this cast!
+        return (T) groovyResponse.as(cls, this);
     }
 
     public <T> T as(Type cls, ObjectMapperType mapperType) {
-        return groovyResponse.as(cls, mapperType, this);
+        //noinspection unchecked - Maven doesn't compile without this cast!
+        return (T) groovyResponse.as(cls, mapperType, this);
     }
 
     public <T> T as(Type cls, ObjectMapper mapper) {
-        return groovyResponse.as(cls, mapper);
+        //noinspection unchecked - Maven doesn't compile without this cast!
+        return (T) groovyResponse.as(cls, mapper);
     }
 
     public JsonPath jsonPath() {
@@ -210,7 +226,8 @@ public class RestAssuredResponseOptionsImpl<R extends ResponseOptions<R>> implem
     }
 
     public <T> T path(String path, String... arguments) {
-        return groovyResponse.path(path, arguments);
+        //noinspection unchecked - Maven doesn't compile without this cast!
+        return (T) groovyResponse.path(path, arguments);
     }
 
     public String asString() {
@@ -243,19 +260,23 @@ public class RestAssuredResponseOptionsImpl<R extends ResponseOptions<R>> implem
 
     public R peek() {
         groovyResponse.peek((ResponseOptions) this, (ResponseBody) this);
+        //noinspection unchecked
         return (R) this;
     }
 
     public R prettyPeek() {
         groovyResponse.prettyPeek((ResponseOptions) this, (ResponseBody) this);
+        //noinspection unchecked
         return (R) this;
     }
 
     public R andReturn() {
+        //noinspection unchecked
         return (R) this;
     }
 
     public R thenReturn() {
+        //noinspection unchecked
         return (R) this;
     }
 

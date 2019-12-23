@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2018 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package io.restassured.module.webtestclient.setup;
 
+import java.util.Map;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,5 +32,10 @@ public class HeaderController {
     public Mono<String> header(@RequestHeader("headerName") String headerValue,
                                @RequestHeader(value = "User-Agent", required = false) String userAgent) {
         return Mono.just("{\"headerName\" : \"" + headerValue + "\", \"user-agent\" : \"" + userAgent + "\"}");
+    }
+
+    @GetMapping(value = "/headers", produces = APPLICATION_JSON_VALUE)
+    public Mono<Map<String, String>> headers(ServerHttpRequest request) {
+        return Mono.just(request.getHeaders().toSingleValueMap());
     }
 }

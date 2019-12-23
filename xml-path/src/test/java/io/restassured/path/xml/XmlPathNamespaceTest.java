@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package io.restassured.path.xml;
 import io.restassured.path.xml.config.XmlPathConfig;
 import org.junit.Test;
 
+import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.junit.Assert.assertThat;
 
 public class XmlPathNamespaceTest {
@@ -86,8 +86,8 @@ public class XmlPathNamespaceTest {
         // Then
         assertThat(xmlPath.getString("x:response.'x:container'.'x:item'[0].x:name"), equalTo("first"));
         assertThat(xmlPath.getString("response.container.':item'[0].name"), equalTo("fourth"));
-        assertThat(xmlPath.getString("x:response.'x:container'.'x:item'[3].x:name"), isEmptyOrNullString());
-        assertThat(xmlPath.getString("'x:response'.'x:container'.'x:item'[3].x:name"), isEmptyOrNullString());
+        assertThat(xmlPath.getString("x:response.'x:container'.'x:item'[3].x:name"), emptyOrNullString());
+        assertThat(xmlPath.getString("'x:response'.'x:container'.'x:item'[3].x:name"), emptyOrNullString());
     }
 
     @Test public void
@@ -117,8 +117,8 @@ public class XmlPathNamespaceTest {
         // Then
         assertThat(xmlPath.getString("x:response.x:container.x:item[0].x:name"), equalTo("first"));
         assertThat(xmlPath.getString("response.container.:item[0].name"), equalTo("fourth"));
-        assertThat(xmlPath.getString("x:response.x:container.x:item[3].x:name"), isEmptyOrNullString());
-        assertThat(xmlPath.getString("'x:response'.x:container.x:item[3].x:name"), isEmptyOrNullString());
+        assertThat(xmlPath.getString("x:response.x:container.x:item[3].x:name"), emptyOrNullString());
+        assertThat(xmlPath.getString("'x:response'.x:container.x:item[3].x:name"), emptyOrNullString());
     }
 
     @Test public void

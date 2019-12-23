@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package io.restassured.internal
 
 import groovy.xml.StreamingMarkupBuilder
 import io.restassured.assertion.CookieMatcher
+import io.restassured.common.mapper.DataToDeserialize
+import io.restassured.common.mapper.TypeRef
 import io.restassured.config.DecoderConfig
 import io.restassured.config.RestAssuredConfig
 import io.restassured.filter.log.LogDetail
@@ -33,7 +35,6 @@ import io.restassured.internal.mapping.ObjectMapping
 import io.restassured.internal.print.ResponsePrinter
 import io.restassured.internal.support.CloseHTTPClientConnectionInputStreamWrapper
 import io.restassured.internal.support.Prettifier
-import io.restassured.mapper.DataToDeserialize
 import io.restassured.mapper.ObjectMapper
 import io.restassured.mapper.ObjectMapperDeserializationContext
 import io.restassured.mapper.ObjectMapperType
@@ -51,7 +52,7 @@ import java.lang.reflect.Type
 import java.nio.charset.Charset
 import java.util.concurrent.TimeUnit
 
-import static io.restassured.internal.assertion.AssertParameter.notNull
+import static io.restassured.internal.common.assertion.AssertParameter.notNull
 import static io.restassured.path.json.config.JsonPathConfig.jsonPathConfig
 import static io.restassured.path.xml.config.XmlPathConfig.xmlPathConfig
 import static org.apache.commons.lang3.StringUtils.containsIgnoreCase
@@ -63,25 +64,25 @@ class RestAssuredResponseOptionsGroovyImpl {
   private static final long NO_RESPONSE_TIME = -1
 
   def responseHeaders
-  def Cookies cookies
+  Cookies cookies
   def content
   def contentType
   def statusLine
   def statusCode
   def sessionIdName
-  def Map filterContextProperties
-  def connectionManager;
+  Map filterContextProperties
+  def connectionManager
 
-  def String defaultContentType
-  def ResponseParserRegistrar rpr
+  String defaultContentType
+  ResponseParserRegistrar rpr
 
-  def DecoderConfig decoderConfig
+  DecoderConfig decoderConfig
 
-  def boolean hasExpectations
+  boolean hasExpectations
 
-  def RestAssuredConfig config
+  RestAssuredConfig config
 
-  public void parseResponse(httpResponse, content, hasBodyAssertions, ResponseParserRegistrar responseParserRegistrar) {
+  void parseResponse(httpResponse, content, hasBodyAssertions, ResponseParserRegistrar responseParserRegistrar) {
     parseHeaders(httpResponse)
     parseContentType(httpResponse)
     parseCookies()
@@ -117,10 +118,10 @@ class RestAssuredResponseOptionsGroovyImpl {
   }
 
   def parseHeaders(httpResponse) {
-    def headerList = [];
+    def headerList = []
     httpResponse.headers.each {
       def name = it.getName()
-      def value = it.getValue();
+      def value = it.getValue()
       headerList << new Header(name, value)
     }
     this.responseHeaders = new Headers(headerList)
@@ -149,11 +150,11 @@ class RestAssuredResponseOptionsGroovyImpl {
       // mkp.declareNamespace(dc: "http://purl.org/dc/elements/1.1/")
       mkp.yield node
     }
-    return writer.toString();
+    return writer.toString()
   }
 
   String print() {
-    def string = asString();
+    def string = asString()
     content = string
     println string
     string
@@ -167,22 +168,22 @@ class RestAssuredResponseOptionsGroovyImpl {
   }
 
   def peek(ResponseOptions responseOptions, ResponseBody responseBody) {
-    ResponsePrinter.print(responseOptions, responseBody, System.out, LogDetail.ALL, false);
+    ResponsePrinter.print(responseOptions, responseBody, System.out, LogDetail.ALL, false)
   }
 
   def prettyPeek(ResponseOptions responseOptions, ResponseBody responseBody) {
-    ResponsePrinter.print(responseOptions, responseBody, System.out, LogDetail.ALL, true);
+    ResponsePrinter.print(responseOptions, responseBody, System.out, LogDetail.ALL, true)
   }
 
   String asString() {
     asString(false)
   }
 
-  def String asString(boolean forcePlatformDefaultCharsetIfNoCharsetIsSpecifiedInResponse) {
+  String asString(boolean forcePlatformDefaultCharsetIfNoCharsetIsSpecifiedInResponse) {
     charsetToString(findCharset(forcePlatformDefaultCharsetIfNoCharsetIsSpecifiedInResponse))
   }
 
-  def boolean isInputStream() {
+  boolean isInputStream() {
     content instanceof InputStream
   }
 
@@ -194,13 +195,13 @@ class RestAssuredResponseOptionsGroovyImpl {
     }
   }
 
-  def byte[] convertStringToByteArray(string) {
+  byte[] convertStringToByteArray(string) {
     string.getBytes(findCharset())
   }
 
   byte[] asByteArray() {
     if (content == null) {
-      return new byte[0];
+      return new byte[0]
     }
     if (hasExpectations) {
       return content instanceof byte[] ? content : content.getBytes(findCharset())
@@ -215,7 +216,7 @@ class RestAssuredResponseOptionsGroovyImpl {
   }
 
   def <T> T "as"(Type cls, ResponseBodyData responseBodyData) {
-    def charset = findCharset();
+    def charset = findCharset()
     String contentTypeToChose = findContentType {
       throw new IllegalStateException("""Cannot parse content to $cls because no content-type was present in the response and no default parser has been set.\nYou can specify a default parser using e.g.:\nRestAssured.defaultParser = Parser.JSON;\n
 or you can specify an explicit ObjectMapper using as($cls, <ObjectMapper>);""")
@@ -235,11 +236,16 @@ or you can specify an explicit ObjectMapper using as($cls, <ObjectMapper>);""")
     return mapper.deserialize(ctx) as T
   }
 
-  def String findCharset() {
+  def <T> T "as"(TypeRef<T> typeRef, ResponseBodyData responseBodyData) {
+    notNull typeRef, "Type ref"
+    return "as"(typeRef.getType(), responseBodyData)
+  }
+
+  String findCharset() {
     return findCharset(false)
   }
 
-  def String findCharset(boolean forcePlatformDefaultCharsetIfNoCharsetIsSpecifiedInResponse) {
+  String findCharset(boolean forcePlatformDefaultCharsetIfNoCharsetIsSpecifiedInResponse) {
     String charset = CharsetExtractor.getCharsetFromContentType(isBlank(contentType) ? defaultContentType : contentType)
 
     if (charset == null || charset.trim().equals("")) {
@@ -254,25 +260,25 @@ or you can specify an explicit ObjectMapper using as($cls, <ObjectMapper>);""")
       charset = decoderConfig.defaultCharsetForContentType(contentType)
     }
 
-    return charset;
+    return charset
   }
 
-  def Cookies detailedCookies() {
+  Cookies detailedCookies() {
     if (cookies == null) {
       return new Cookies()
     }
     return cookies
   }
 
-  def Cookies getDetailedCookies() {
+  Cookies getDetailedCookies() {
     return detailedCookies()
   }
 
-  def Cookie detailedCookie(String name) {
+  Cookie detailedCookie(String name) {
     return detailedCookies().get(name)
   }
 
-  def Cookie getDetailedCookie(String name) {
+  Cookie getDetailedCookie(String name) {
     return detailedCookie(name)
   }
 
@@ -359,7 +365,7 @@ or you can specify an explicit ObjectMapper using as($cls, <ObjectMapper>);""")
             jackson1ObjectMapperFactory(config.getObjectMapperConfig().jackson1ObjectMapperFactory()).
             jackson2ObjectMapperFactory(config.getObjectMapperConfig().jackson2ObjectMapperFactory()).
             gsonObjectMapperFactory(config.getObjectMapperConfig().gsonObjectMapperFactory()).
-            numberReturnType(config.getJsonConfig().numberReturnType()));
+            numberReturnType(config.getJsonConfig().numberReturnType()))
   }
 
   JsonPath jsonPath(JsonPathConfig config) {
@@ -387,12 +393,12 @@ or you can specify an explicit ObjectMapper using as($cls, <ObjectMapper>);""")
   def <T> T path(String path, String... arguments) {
     notNull path, "Path"
     if (arguments?.length > 0) {
-      path = String.format(path, arguments);
+      path = String.format(path, arguments)
     }
     def contentType = findContentType {
       throw new IllegalStateException("""Cannot invoke the path method because no content-type was present in the response and no default parser has been set.\n
 You can specify a default parser using e.g.:\nRestAssured.defaultParser = Parser.JSON;\n""")
-    };
+    }
     if (containsIgnoreCase(contentType, "xml")) {
       return xmlPath().get(path)
     } else if (containsIgnoreCase(contentType, "json")) {
@@ -404,7 +410,7 @@ You can specify a default parser using e.g.:\nRestAssured.defaultParser = Parser
   }
 
 
-  def long time() {
+  long time() {
     if (filterContextProperties?.containsKey(TimingFilter.RESPONSE_TIME_MILLISECONDS)) {
       filterContextProperties.get(TimingFilter.RESPONSE_TIME_MILLISECONDS)
     } else {
@@ -412,7 +418,7 @@ You can specify a default parser using e.g.:\nRestAssured.defaultParser = Parser
     }
   }
 
-  def long timeIn(TimeUnit timeUnit) {
+  long timeIn(TimeUnit timeUnit) {
     notNull timeUnit, TimeUnit.class
     def time = time()
     if (time != NO_RESPONSE_TIME && timeUnit != TimeUnit.MILLISECONDS) {
@@ -422,56 +428,56 @@ You can specify a default parser using e.g.:\nRestAssured.defaultParser = Parser
   }
 
   private convertToByteArray(InputStream stream) {
-    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-    int nRead;
-    byte[] data = new byte[16384];
+    ByteArrayOutputStream buffer = new ByteArrayOutputStream()
+    int nRead
+    byte[] data = new byte[16384]
 
     try {
       while ((nRead = stream.read(data, 0, data.length)) != -1) {
-        buffer.write(data, 0, nRead);
+        buffer.write(data, 0, nRead)
       }
-      buffer.flush();
+      buffer.flush()
     } finally {
       stream.close()
     }
-    return buffer.toByteArray();
+    return buffer.toByteArray()
   }
 
   private String convertToString(Reader reader) {
     if (reader == null) {
-      return "";
+      return ""
     }
 
-    Writer writer = new StringWriter();
-    char[] buffer = new char[1024];
+    Writer writer = new StringWriter()
+    char[] buffer = new char[1024]
     try {
-      int n;
+      int n
       while ((n = reader.read(buffer)) != -1) {
-        writer.write(buffer, 0, n);
+        writer.write(buffer, 0, n)
       }
     } finally {
-      reader?.close();
+      reader?.close()
     }
-    return writer.toString();
+    return writer.toString()
   }
 
   private static byte[] convertStreamToByteArray(InputStream is) throws IOException {
-    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    ByteArrayOutputStream buffer = new ByteArrayOutputStream()
     try {
-      int nRead;
-      byte[] data = new byte[16384];
+      int nRead
+      byte[] data = new byte[16384]
 
       while ((nRead = is.read(data, 0, data.length)) != -1) {
-        buffer.write(data, 0, nRead);
+        buffer.write(data, 0, nRead)
       }
 
-      buffer.flush();
+      buffer.flush()
     } finally {
-      buffer?.close();
-      is?.close();
+      buffer?.close()
+      is?.close()
     }
 
-    return buffer.toByteArray();
+    return buffer.toByteArray()
   }
 
   private String findContentType(Closure closure) {

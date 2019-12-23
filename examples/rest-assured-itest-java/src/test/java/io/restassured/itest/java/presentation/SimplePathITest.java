@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,10 @@ import static org.junit.Assert.assertThat;
 public class SimplePathITest extends WithJetty {
 
     @Test
-    public void simpleJsonValidationWithJsonPath() throws Exception {
+    public void simpleJsonValidationWithJsonPath() {
         final String body = get("/greetJSON?firstName=John&lastName=Doe").asString();
 
-        final JsonPath json = new JsonPath(body).setRoot("greeting");
+        final JsonPath json = new JsonPath(body).setRootPath("greeting");
         final String firstName = json.getString("firstName");
         final String lastName = json.getString("lastName");
 
@@ -40,10 +40,10 @@ public class SimplePathITest extends WithJetty {
     }
 
     @Test
-    public void simpleXmlValidationWithXmlPath() throws Exception {
+    public void simpleXmlValidationWithXmlPath() {
         final String body = get("/greetXML?firstName=John&lastName=Doe").asString();
 
-        final XmlPath xml = new XmlPath(body).setRoot("greeting");
+        final XmlPath xml = new XmlPath(body).setRootPath("greeting");
         final String firstName = xml.getString("firstName");
         final String lastName = xml.getString("lastName");
 

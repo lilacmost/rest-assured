@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,21 @@
 
 package io.restassured.path.json;
 
-import io.restassured.internal.assertion.AssertParameter;
-import io.restassured.internal.path.ObjectConverter;
+import groovy.json.JsonBuilder;
+import groovy.json.JsonOutput;
+import io.restassured.common.mapper.TypeRef;
+import io.restassured.internal.common.assertion.AssertParameter;
+import io.restassured.internal.common.path.ObjectConverter;
 import io.restassured.internal.path.json.ConfigurableJsonSlurper;
 import io.restassured.internal.path.json.JSONAssertion;
 import io.restassured.internal.path.json.JsonPrettifier;
 import io.restassured.internal.path.json.mapping.JsonObjectDeserializer;
-import io.restassured.mapper.factory.GsonObjectMapperFactory;
-import io.restassured.mapper.factory.Jackson1ObjectMapperFactory;
-import io.restassured.mapper.factory.Jackson2ObjectMapperFactory;
 import io.restassured.path.json.config.JsonParserType;
 import io.restassured.path.json.config.JsonPathConfig;
 import io.restassured.path.json.exception.JsonPathException;
-import groovy.json.JsonBuilder;
-import groovy.json.JsonOutput;
+import io.restassured.path.json.mapper.factory.GsonObjectMapperFactory;
+import io.restassured.path.json.mapper.factory.Jackson1ObjectMapperFactory;
+import io.restassured.path.json.mapper.factory.Jackson2ObjectMapperFactory;
 
 import java.io.*;
 import java.net.URL;
@@ -395,7 +396,8 @@ public class JsonPath {
                 if (t instanceof Map && !genericType.isAssignableFrom(Map.class)) {
                     // TODO Avoid double parsing
                     String str = objectToString(t);
-                    e = jsonStringToObject(str, genericType);
+                    //noinspection unchecked
+                    e = (T) jsonStringToObject(str, genericType);
                 } else {
                     e = ObjectConverter.convertObjectTo(t, genericType);
                 }
@@ -555,7 +557,62 @@ public class JsonPath {
             throw new IllegalStateException("Internal error: Json object was not an instance of String, please report to the REST Assured mailing-list.");
         }
 
-        return jsonStringToObject((String) object, objectType);
+        return (T) jsonStringToObject((String) object, objectType);
+    }
+
+    /**
+     * Get the result of a Object path expression as a java Object with generic type.
+     * E.g. given the following Object document:
+     * <pre>
+     * { "store": {
+     *   "book": [
+     *    { "category": "reference",
+     *      "author": "Nigel Rees",
+     *      "title": "Sayings of the Century",
+     *      "price": 8.95
+     *    },
+     *    { "category": "fiction",
+     *      "author": "Evelyn Waugh",
+     *      "title": "Sword of Honour",
+     *      "price": 12.99
+     *    },
+     *    { "category": "fiction",
+     *      "author": "Herman Melville",
+     *      "title": "Moby Dick",
+     *      "isbn": "0-553-21311-3",
+     *      "price": 8.99
+     *    },
+     *    { "category": "fiction",
+     *      "author": "J. R. R. Tolkien",
+     *      "title": "The Lord of the Rings",
+     *      "isbn": "0-395-19395-8",
+     *      "price": 22.99
+     *    }
+     *  ],
+     *    "bicycle": {
+     *      "color": "red",
+     *      "price": 19.95
+     *    }
+     *  }
+     * }
+     * </pre>
+     * And you want to get a book as a <code>Map&lt;String, Object&gt;</code>:
+     * <p/>
+     * Then
+     * <pre>
+     * Map&lt;String, Object&gt; book = from(Object).getObject("store.book[2]", new TypeRef&lt;Map&lt;String, Object&gt;&gt;() {});
+     * </pre>
+     * <p/>
+     * maps the second book to a Book instance.
+     *
+     * @param path       The path to the object to map
+     * @param typeRef    The class type of the expected object
+     * @param <T>        The type of the expected object
+     * @return The object
+     */
+    public <T> T getObject(String path, TypeRef<T> typeRef) {
+        AssertParameter.notNull("objectType", "Type ref");
+        return getObject(path, typeRef.getTypeAsClass());
     }
 
     /**
@@ -838,8 +895,23 @@ public class JsonPath {
      * </pre>
      *
      * @param rootPath The root path to use.
+     * @deprecated Use {@link #setRootPath(String)} instead
      */
+    @Deprecated
     public JsonPath setRoot(String rootPath) {
+        return setRootPath(rootPath);
+    }
+    /**
+     * Set the root path of the document so that you don't need to write the entire path. E.g.
+     * <pre>
+     * final JsonPath jsonPath = new JsonPath(Object).setRootPath("store.book");
+     * assertThat(jsonPath.getInt("size()"), equalTo(4));
+     * assertThat(jsonPath.getList("author", String.class), hasItem("J. R. R. Tolkien"));
+     * </pre>
+     *
+     * @param rootPath The root path to use.
+     */
+    public JsonPath setRootPath(String rootPath) {
         AssertParameter.notNull(rootPath, "Root path");
         this.rootPath = rootPath;
         return this;
@@ -1003,7 +1075,7 @@ public class JsonPath {
         return new JsonBuilder(object).toString();
     }
 
-    private <T> T jsonStringToObject(String object, Class<T> objectType) {
+    private Object jsonStringToObject(String object, Class objectType) {
         JsonPathConfig cfg = new JsonPathConfig(getJsonPathConfig());
         if (cfg.hasCustomJackson10ObjectMapperFactory()) {
             cfg = cfg.defaultParserType(JsonParserType.JACKSON_1);
@@ -1011,8 +1083,11 @@ public class JsonPath {
             cfg = cfg.defaultParserType(JsonParserType.GSON);
         } else if (cfg.hasCustomJackson20ObjectMapperFactory()) {
             cfg = cfg.defaultParserType(JsonParserType.JACKSON_2);
+        } else if (cfg.hasCustomJohnzonObjectMapperFactory()) {
+            cfg = cfg.defaultParserType(JsonParserType.JOHNZON);
         }
 
+        //noinspection unchecked
         return JsonObjectDeserializer.deserialize(object, objectType, cfg);
     }
 }

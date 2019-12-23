@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ public class PathArgumentsDemoITest extends WithJetty {
     @Test
     public void pathArgumentsDemo() throws Exception {
         expect().
-                root("rss.channel.item[%d].enclosure.@url").
+                rootPath("rss.channel.item[%d].enclosure.@url").
                 body(withArgs(0), endsWith("somejpg.jpg")).
                 body(withArgs(1), endsWith("someotherjpg.jpg")).
         when().

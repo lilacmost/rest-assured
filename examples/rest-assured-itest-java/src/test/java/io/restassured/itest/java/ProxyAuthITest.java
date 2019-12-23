@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import java.io.File;
 import static io.restassured.RestAssured.given;
 import static io.restassured.specification.ProxySpecification.auth;
 import static io.restassured.specification.ProxySpecification.host;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.not;
 
 public class ProxyAuthITest extends WithJetty {
@@ -60,7 +60,7 @@ public class ProxyAuthITest extends WithJetty {
         when().
                 get("/greetJSON").
         then().
-                header("Via", not(isEmptyOrNullString()));
+                header("Via", not(emptyOrNullString()));
     }
 
     @Test public void
@@ -72,7 +72,7 @@ public class ProxyAuthITest extends WithJetty {
         when().
                 get("/greetJSON").
         then().
-                header("Via", not(isEmptyOrNullString()));
+                header("Via", not(emptyOrNullString()));
     }
 
     @Test public void

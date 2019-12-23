@@ -1,3 +1,167 @@
+Changelog next version
+----------------------
+* Jakarta EE API: switch from javax.xml.bind:jaxb-api to jakarta.xml.bind:jakarta.xml.bind-api (issue 1228) (thanks to Sanne Grinovero for pull request)
+
+Changelog 4.1.2 (2019-10-02)
+----------------------------
+* The properties in a JSON document now preserves the order in which they are received (thanks to contextshuffling for pull request).
+* Added "When" method to Kotlin extensions API for consistency. This means that you can now call "When" directly without using "Given":
+    When {
+        get("/greeting")
+    }
+* Fixed so that it's possible to extract values after body validations in the Kotlin extensions API (issue 1212)
+* Upgrading jackson2 from version 2.9.9 to 2.10.0
+* Upgraded Groovy from version 2.5.6 to 2.5.8
+* Support for Java 13 (enabled by groovy upgrade)
+
+Changelog 4.1.1 (2019-09-06)
+---------------------------
+* Upgraded jaxb-api from 2.2.12 to 2.3.1
+* Upgraded jaxb-osgi from 2.2.10 to 2.3.0.1
+
+Changelog 4.1.0 (2019-09-02)
+----------------------------
+* Upgraded jackson2 from version 2.9.8 to 2.9.9 because of security issue in jackson-databind 2.9.8
+* The ResponseBuilder now sets a default RestAssuredConfig instance when building responses from scratch. This is needed for example if extracting path's from the response.
+* Added a Kotlin module that contains Kotlin extension functions that makes REST Assured nicer to work with from Kotlin. Depend on:
+
+    <dependency>
+        <groupId>io.rest-assured</groupId>
+        <artifactId>kotlin-extensions</artifactId>
+        <version>${rest-assured.version}</version>
+        <scope>test</scope>
+    </dependency>
+
+  and then import "Given" from the "io.restassured.module.kotlin.extensions" package. You can then use it like this:
+
+    val message: String =
+    Given {
+        port(7000)
+        header("Header", "Header")
+        body("hello")
+    } When {
+        put("/the/path")
+    } Then {
+        statusCode(200)
+        body("message", equalTo("Another World"))
+    } Extract {
+        path("message")
+    }
+
+  Besides a more pleasing API for Kotlin developers it also has a couple of major benefits to the Java API:
+  
+  1. All failed expectations are reported at the same time
+  2. Formatting the code in your IDE won't mess up indentation
+
+  (issue 609)
+* No longer depending on hamcrest-core or hamcrest-library, instead the hamcrest module is used directly.
+* The scala support module has been upgraded to use Scala 2.13.0 (previously 2.12.7 was used)
+* RequestSpecBuilder no longer sets 8080 port for non localhost uri (issue #1197) (thanks to dr29bart for pull request)
+
+Changelog 4.0.0 (2019-05-10)
+----------------------------
+* Fix duplication of content type in the Spring MockMvc module (thanks to Gemini Kim for pull request)
+* Fixed issue with overwriting FailureConfig on settings other configs (#1127) (thanks to Victor Orlovsky for pull request)
+* Added version range for the Groovy dependency for the osgi module to be between 2.4 and less than 2.5. This is because the API has changed in Groovy 2.5. (thanks to Rikske54 for pull request)
+* Fixed so that using a ResponseSpecBuilder doesn't overwrite the configured config implicitly (issue 1128)
+* Add Apache Johnzon object mapper support (thanks to Andriy Redko for pull request)
+* Add support for MatcherConfig in RestAssuredMockMvcConfig (#1071) (thanks to Jurriaan Pruijs for pull request)
+* Supported for logging when assertion errors thrown from internal matcher #1129 (thanks to Gemini Kim for pull request)
+* Fixed so that there no longer are multiple versions of org.springframework:spring-web:jar, leading to inconsistent semantic behaviors (#1143) (thanks to HelloCoCooo for pull request)
+* Fixed issues with the use of maven-bundle-plugin which created duplicate classes in the distributed jar-files (#1117) (big thanks to Milen Dyankov, Steven Huypens and Mark Kolich for the help!)
+* Breaking changes introduced when solving #1117:
+    * io.restassured.mapper.TypeRef has been moved to io.restassured.common.mapper.TypeRef
+    * io.restassured.mapper.DataToDeserialize has been moved to io.restassured.common.mapper.DataToDeserialize
+    * io.restassured.mapper.ObjectDeserializationContext has been moved to io.restassured.common.mapper.ObjectDeserializationContext
+    * io.restassured.mapper.factory.GsonObjectMapperFactory has been moved to io.restassured.path.json.mapper.factory.GsonObjectMapperFactory
+    * io.restassured.mapper.factory.Jackson1ObjectMapperFactory has been moved to io.restassured.path.json.mapper.factory.Jackson1ObjectMapperFactory
+    * io.restassured.mapper.factory.Jackson2ObjectMapperFactory has been moved to io.restassured.path.json.mapper.factory.Jackson2ObjectMapperFactory
+    * io.restassured.mapper.factory.DefaultGsonObjectMapperFactory has been moved to io.restassured.path.json.mapper.factory.DefaultGsonObjectMapperFactory
+    * io.restassured.mapper.factory.DefaultJackson1ObjectMapperFactory has been moved to io.restassured.path.json.mapper.factory.DefaultJackson1ObjectMapperFactory
+    * io.restassured.mapper.factory.DefaultJackson2ObjectMapperFactory has been moved to io.restassured.path.json.mapper.factory.DefaultJackson2ObjectMapperFactory
+    * io.restassured.mapper.resolver.ObjectMapperResolver has been moved to io.restassured.common.mapper.resolver.ObjectMapperResolver
+    * io.restassured.exception.PathException has been moved to io.restassured.common.exception.PathException
+* Removed deprecated methods:
+    * io.restassured.RestAssured
+        * withArguments
+        * withNoArguments
+    * io.restassured.builder.ResponseSpecBuilder
+        * expectContent
+    * io.restassured.builder.RequestSpecBuilder
+        * setContent
+        * addParameters
+        * addParameter
+        * addQueryParameters
+        * addQueryParameter
+        * addFormParameters
+        * addFormParameter
+        * addPathParameter
+        * addPathParameters
+        * setAuthentication
+    * io.restassured.specification.ResponseSpecification
+        * content
+        * specification
+    * io.restassured.specification.RequestSpecification
+        * content
+        * formParameters
+        * formParameter
+        * pathParameter
+        * pathParameters
+        * authentication
+        * specification
+        * parameters
+        * parameter
+        * queryParameter
+        * queryParameters
+* Deprecations
+    * Deprecated all short versions of "root", for example "root(..)", "appendRoot(..)", "detachRoot(..)". Use "rootPath(..)", "appendRootPath(..)", "detachRootPath(..)" instead. This was introduced for better consistency and clearer intention..
+    * JsonPath#setRoot(..) - Use JsonPath#setRootPath(..) instead
+    * XmlPath#setRoot(..) - Use XmlPath#setRootPath(..) instead
+* Rest Assured now requires Java 8 (previously Java 6 was required)
+* Removed io.restassured.function.RestAssuredFunction - use java.util.function.Function instead
+* Made io.restassured.matcher.ResponseAwareMatcher a proper annotated functional interface
+* Made io.restassured.filter.Filter a proper annotated functional interface
+* Made io.restassured.listener.ResponseValidationFailureListener a proper annotated functional interface
+* Made io.restassured.module.mockmvc.intercept.MockHttpServletRequestBuilderInterceptor a proper annotated functional interface
+* Made io.restassured.path.json.mapping.JsonPathObjectDeserializer a proper annotated functional interface
+* Upgraded Groovy dependency from 2.4.15 to 2.5.6
+* Removed io.restassured.response.ValidatableResponseOptions#specification(..), use io.restassured.response.ValidatableResponseOptions#spec instead
+* Removed io.restassured.response.ValidatableResponseOptions#content(..), use io.restassured.response.ValidatableResponseOptions#body(..) instead
+* Upgraded Hamcrest from version 1.3 to 2.1
+* Made it possible to specify a multi-expectation body with arguments. For example:
+    when().
+            get("/jsonStore").
+    then().
+            rootPath("store.book.find { it.author == '%s' }").
+            body(
+                    "price", withArgs("Nigel Rees"), is(8.95f),
+                    "price", withArgs("Evelyn Waugh"), is(12.99f)
+            );
+  (issue #1154)
+* MockMvc module now supports using MediaType for Accept header value (issue #1142). Thanks to Gemini Kim for pull request.
+* Support for using "HttpStatus" when validating response status when using MockMvc module. Thanks to Gemini Kim for pull request.
+* MockMvc module now supports using MediaType for Accept header in WebTestClientRequest. Thanks to Gemini Kim for pull request.
+* Upgraded spring-webmvc dependency from version 4.3.19.RELEASE to 4.3.23.RELEASE (issue #1161)
+
+Changelog 3.3.0 (2019-01-11)
+----------------------------
+* Upgraded json-schema-validator from version 2.2.6 to 2.2.10 (thanks to thorin for pull request)
+* Added io.restassured.mapper.TypeRef class that allows you to deserialize the response to a container with generic type. For example:
+    List<Map<String, Object>> products = get("/products").as(new TypeRef<List<Map<String, Object>>>() {});
+  Currently this only works for JSON :(
+* Add logging functionality to the ResponseSpecBuilder, i.e. you can now do:
+    ResponseSpecification spec = new ResponseSpecBuilder().log(LogDetail.ALL).build();
+  (issue 579). Thanks to Aleksandr Podkutin for pull request!
+* httpmime dependency is updated to version 4.5.3 and is now consistent with httpclient (thanks to Rüdiger Herrmann for pull request).
+* Updated commons-fileupload from 1.3.1 to 1.3.3 to fix security issues
+* Added a new artifact, rest-assured-all, which you can depend on instead of rest-assured to avoid split packages in Java 9+. (thanks to Tomasz Gaweda for pull request)
+* Introduces custom listeners on test validation failures. This makes it possible to hook into Rest Assured and get a callback when the test fails with full access to the request/response specification
+  as well as the response. You can do this by implementing the "io.restassured.listener.ResponseValidationFailureListener" and add it to the new "FailureConfig". For example:
+
+      given().config(RestAssured.config().failureConfig(failureConfig().with().failureListeners((requestSpec, responseSpec, response) -> log.info("Rest Assured validation failed!")).when(). ..
+
+  (issue 1093) (thanks to Daniel Dyląg for pull request).
+
 Changelog 3.2.0 (2018-10-19)
 ----------------------------
 * Added OSGi support (thanks to ponziani for pull request)

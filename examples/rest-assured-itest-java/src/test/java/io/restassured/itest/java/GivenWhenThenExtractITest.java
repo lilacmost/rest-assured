@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,13 @@
 
 package io.restassured.itest.java;
 
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.itest.java.support.WithJetty;
 import io.restassured.response.Response;
 import org.junit.Test;
+
+import java.util.List;
+import java.util.Map;
 
 import static io.restassured.RestAssured.get;
 import static io.restassured.http.ContentType.JSON;
@@ -68,5 +72,31 @@ public class GivenWhenThenExtractITest extends WithJetty {
                 and().body("lotto.winning-numbers", hasItems(2, 45, 34, 23, 7, 5, 3)).extract().path("lotto.lottoId");
 
         assertThat(lottoId, is(5));
+    }
+
+    @Test public void
+    extract_using_type_ref() {
+        List<Map<String, Object>> products = get("/products").as(new TypeRef<List<Map<String, Object>>>() {});
+   
+        assertThat(products, hasSize(2));
+        assertThat(products.get(0).get("id"), equalTo(2));
+        assertThat(products.get(0).get("name"), equalTo("An ice sculpture"));
+        assertThat(products.get(0).get("price"), equalTo(12.5));
+        assertThat(products.get(1).get("id"), equalTo(3));
+        assertThat(products.get(1).get("name"), equalTo("A blue mouse"));
+        assertThat(products.get(1).get("price"), equalTo(25.5));
+    }
+
+    @Test public void
+    extract_using_type_ref2() {
+        List<Map<String, Float>> products = get("/products").then().extract().path("dimensions");
+
+        assertThat(products, hasSize(2));
+        assertThat(products.get(0).get("length"), equalTo(7.0f));
+        assertThat(products.get(0).get("width"), equalTo(12.0f));
+        assertThat(products.get(0).get("height"), equalTo(9.5f));
+        assertThat(products.get(1).get("length"), equalTo(3.1f));
+        assertThat(products.get(1).get("width"), equalTo(1.0f));
+        assertThat(products.get(1).get("height"), equalTo(1.0f));
     }
 }

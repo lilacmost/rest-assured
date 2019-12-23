@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,7 @@ import io.restassured.RestAssured;
 import io.restassured.config.LogConfig;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.filter.log.LogDetail;
-import io.restassured.function.RestAssuredFunction;
 import io.restassured.http.ContentType;
-import io.restassured.http.Cookie;
 import io.restassured.internal.log.LogRepository;
 import io.restassured.internal.print.ResponsePrinter;
 import io.restassured.internal.util.SafeExceptionRethrower;
@@ -39,13 +37,14 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
-import static io.restassured.internal.assertion.AssertParameter.notNull;
+import static io.restassured.internal.common.assertion.AssertParameter.notNull;
 
 @SuppressWarnings("unchecked")
 public abstract class ValidatableResponseOptionsImpl<T extends ValidatableResponseOptions<T, R>, R extends ResponseBody<R> & ResponseOptions<R>> implements ValidatableResponseLogSpec<T, R> {
 
-    private final ResponseSpecificationImpl responseSpec;
+    public final ResponseSpecificationImpl responseSpec;
     private final ExtractableResponse<R> extractableResponse;
     protected final Response response;
     private final RestAssuredConfig config;
@@ -56,10 +55,6 @@ public abstract class ValidatableResponseOptionsImpl<T extends ValidatableRespon
         this.response = response;
         responseSpec = new ResponseSpecificationImpl(RestAssured.rootPath, RestAssured.responseSpecification, rpr, this.config, response, logRepository);
         this.extractableResponse = extractableResponse;
-    }
-
-    public T content(List<Argument> arguments, ResponseAwareMatcher<R> responseAwareMatcher) {
-        return content(arguments, getMatcherFromResponseAwareMatcher(responseAwareMatcher));
     }
 
     public T body(List<Argument> arguments, ResponseAwareMatcher<R> responseAwareMatcher) {
@@ -73,31 +68,6 @@ public abstract class ValidatableResponseOptionsImpl<T extends ValidatableRespon
     public T body(String key, ResponseAwareMatcher<R> responseAwareMatcher) {
         notNull(responseAwareMatcher, ResponseAwareMatcher.class);
         return body(key, getMatcherFromResponseAwareMatcher(responseAwareMatcher));
-    }
-
-    public T content(String path, List<Argument> arguments, ResponseAwareMatcher<R> responseAwareMatcher) {
-        notNull(responseAwareMatcher, ResponseAwareMatcher.class);
-        return content(path, arguments, getMatcherFromResponseAwareMatcher(responseAwareMatcher));
-    }
-
-    public T content(String path, ResponseAwareMatcher<R> responseAwareMatcher) {
-        notNull(responseAwareMatcher, ResponseAwareMatcher.class);
-        return content(path, getMatcherFromResponseAwareMatcher(responseAwareMatcher));
-    }
-
-    public T content(Matcher<?> matcher, Matcher<?>... additionalMatchers) {
-        responseSpec.content(matcher, additionalMatchers);
-        return (T) this;
-    }
-
-    public T content(List<Argument> arguments, Matcher matcher, Object... additionalKeyMatcherPairs) {
-        responseSpec.content(arguments, matcher, additionalKeyMatcherPairs);
-        return (T) this;
-    }
-
-    public T content(String key, Matcher<?> matcher, Object... additionalKeyMatcherPairs) {
-        responseSpec.content(key, matcher, additionalKeyMatcherPairs);
-        return (T) this;
     }
 
     public T body(String path, List<Argument> arguments, Matcher matcher, Object... additionalKeyMatcherPairs) {
@@ -155,7 +125,7 @@ public abstract class ValidatableResponseOptionsImpl<T extends ValidatableRespon
         return (T) this;
     }
 
-    public <U> T header(String headerName, RestAssuredFunction<String, U> f, Matcher<? super U> matcher) {
+    public <U> T header(String headerName, Function<String, U> f, Matcher<? super U> matcher) {
         responseSpec.header(headerName, f, matcher);
         return (T) this;
     }
@@ -213,13 +183,13 @@ public abstract class ValidatableResponseOptionsImpl<T extends ValidatableRespon
 
 
     public T root(String rootPath) {
-        responseSpec.root(rootPath);
+        responseSpec.rootPath(rootPath);
         return (T) this;
     }
 
 
     public T noRoot() {
-        responseSpec.noRoot();
+        responseSpec.noRootPath();
         return (T) this;
     }
 
@@ -230,19 +200,19 @@ public abstract class ValidatableResponseOptionsImpl<T extends ValidatableRespon
     }
 
 
-    public T appendRoot(String pathToAppend) {
-        responseSpec.appendRoot(pathToAppend);
+    public T appendRootPath(String pathToAppend) {
+        responseSpec.appendRootPath(pathToAppend);
         return (T) this;
     }
 
 
-    public T appendRoot(String pathToAppend, List<Argument> arguments) {
-        responseSpec.appendRoot(pathToAppend, arguments);
+    public T appendRootPath(String pathToAppend, List<Argument> arguments) {
+        responseSpec.appendRootPath(pathToAppend, arguments);
         return (T) this;
     }
 
-    public T detachRoot(String pathToDetach) {
-        responseSpec.detachRoot(pathToDetach);
+    public T detachRootPath(String pathToDetach) {
+        responseSpec.detachRootPath(pathToDetach);
         return (T) this;
     }
 
@@ -277,7 +247,7 @@ public abstract class ValidatableResponseOptionsImpl<T extends ValidatableRespon
 
 
     public T content(String path, List<Argument> arguments, Matcher matcher, Object... additionalKeyMatcherPairs) {
-        responseSpec.content(path, arguments, matcher, additionalKeyMatcherPairs);
+        responseSpec.body(path, arguments, matcher, additionalKeyMatcherPairs);
         return (T) this;
     }
 
@@ -295,11 +265,6 @@ public abstract class ValidatableResponseOptionsImpl<T extends ValidatableRespon
     }
 
     public T spec(ResponseSpecification responseSpecification) {
-        return specification(responseSpecification);
-    }
-
-    public T specification(ResponseSpecification responseSpecification) {
-        notNull(responseSpecification, ResponseSpecification.class);
         // We parse the response as a string here because we need to enforce it otherwise specs won't work
         response.asString();
 
@@ -307,11 +272,17 @@ public abstract class ValidatableResponseOptionsImpl<T extends ValidatableRespon
         if (responseSpecification instanceof ResponseSpecificationImpl) {
             ResponseSpecificationImpl impl = (ResponseSpecificationImpl) responseSpecification;
             LogConfig globalLogConfig = responseSpec.getConfig().getLogConfig();
+            impl.setConfig(config);
             if (globalLogConfig.isLoggingOfRequestAndResponseIfValidationFailsEnabled()) {
-                impl.setConfig(impl.getConfig().logConfig(globalLogConfig));
                 impl.setLogRepository(responseSpec.getLogRepository());
             }
+            if (impl.getLogDetail() != null) {
+                logResponse(impl.getLogDetail(), globalLogConfig.isPrettyPrintingEnabled(),
+                        globalLogConfig.defaultStream());
+            }
+
         }
+
 
         // Finally validate the response
         responseSpecification.validate(response);

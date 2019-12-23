@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package io.restassured.matcher;
 
-import io.restassured.internal.assertion.AssertParameter;
+import io.restassured.internal.common.assertion.AssertParameter;
 import io.restassured.response.ResponseBody;
 import io.restassured.response.ResponseOptions;
 import org.hamcrest.Matcher;
@@ -61,11 +61,9 @@ public class ResponseAwareMatcherComposer {
     public static <T extends ResponseBody<T> & ResponseOptions<T>> ResponseAwareMatcher<T> and(
             final ResponseAwareMatcher<T> matcher1, final ResponseAwareMatcher<T> matcher2,
             final ResponseAwareMatcher<T>... additionalMatchers) {
-        return new ResponseAwareMatcher<T>() {
-            public Matcher<?> matcher(T response) throws Exception {
-                Matcher<?>[] matchers = toHamcrestMatchers(response, matcher1, matcher2, additionalMatchers);
-                return allOf((Matcher<? super Object>[]) matchers);
-            }
+        return response -> {
+            Matcher<?>[] matchers = toHamcrestMatchers(response, matcher1, matcher2, additionalMatchers);
+            return allOf((Matcher<? super Object>[]) matchers);
         };
     }
 
@@ -81,11 +79,7 @@ public class ResponseAwareMatcherComposer {
     public static <T extends ResponseBody<T> & ResponseOptions<T>> ResponseAwareMatcher<T> and(
             final ResponseAwareMatcher<T> matcher1, final Matcher matcher2,
             final ResponseAwareMatcher<T>... additionalMatchers) {
-        return and(matcher1, new ResponseAwareMatcher<T>() {
-            public Matcher<?> matcher(T response) throws Exception {
-                return matcher2;
-            }
-        }, additionalMatchers);
+        return and(matcher1, response -> matcher2, additionalMatchers);
     }
 
     /**
@@ -143,11 +137,9 @@ public class ResponseAwareMatcherComposer {
     public static <T extends ResponseBody<T> & ResponseOptions<T>> ResponseAwareMatcher<T> or(
             final ResponseAwareMatcher<T> matcher1, final ResponseAwareMatcher<T> matcher2,
             final ResponseAwareMatcher<T>... additionalMatchers) {
-        return new ResponseAwareMatcher<T>() {
-            public Matcher<?> matcher(T response) throws Exception {
-                Matcher<?>[] matchers = toHamcrestMatchers(response, matcher1, matcher2, additionalMatchers);
-                return anyOf((Matcher<? super Object>[]) matchers);
-            }
+        return response -> {
+            Matcher<?>[] matchers = toHamcrestMatchers(response, matcher1, matcher2, additionalMatchers);
+            return anyOf((Matcher<? super Object>[]) matchers);
         };
     }
 
@@ -163,11 +155,7 @@ public class ResponseAwareMatcherComposer {
     public static <T extends ResponseBody<T> & ResponseOptions<T>> ResponseAwareMatcher<T> or(
             final ResponseAwareMatcher<T> matcher1, final Matcher matcher2,
             final ResponseAwareMatcher<T>... additionalMatchers) {
-        return or(matcher1, new ResponseAwareMatcher<T>() {
-            public Matcher<?> matcher(T response) throws Exception {
-                return matcher2;
-            }
-        }, additionalMatchers);
+        return or(matcher1, response -> matcher2, additionalMatchers);
     }
 
     /**

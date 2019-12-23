@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,35 +15,34 @@
  */
 
 
-
 package io.restassured.internal.path.json.mapping
 
 import com.fasterxml.jackson.databind.JavaType
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.restassured.mapper.ObjectDeserializationContext
-import io.restassured.mapper.factory.Jackson2ObjectMapperFactory
+import io.restassured.common.mapper.ObjectDeserializationContext
+import io.restassured.path.json.mapper.factory.Jackson2ObjectMapperFactory
 import io.restassured.path.json.mapping.JsonPathObjectDeserializer
 
 import java.lang.reflect.Type
 
 class JsonPathJackson2ObjectDeserializer implements JsonPathObjectDeserializer {
 
-    private final Jackson2ObjectMapperFactory factory;
+  private final Jackson2ObjectMapperFactory factory;
 
-    JsonPathJackson2ObjectDeserializer(Jackson2ObjectMapperFactory factory) {
-        this.factory = factory
-    }
+  JsonPathJackson2ObjectDeserializer(Jackson2ObjectMapperFactory factory) {
+    this.factory = factory
+  }
 
-    private ObjectMapper createJackson2ObjectMapper(Type cls, String charset) {
-        return factory.create(cls, charset)
-    }
+  private ObjectMapper createJackson2ObjectMapper(Type cls, String charset) {
+    return factory.create(cls, charset)
+  }
 
-    @Override
-    def <T> T deserialize(ObjectDeserializationContext context) {
-        def object = context.getDataToDeserialize().asString()
-        def cls = context.getType()
-        def mapper = createJackson2ObjectMapper(cls, context.getCharset())
-        JavaType javaType = mapper.constructType(cls)
-        return mapper.readValue(object, javaType) as T
-    }
+  @Override
+  deserialize(ObjectDeserializationContext context) {
+    def object = context.getDataToDeserialize().asString()
+    def cls = context.getType()
+    def mapper = createJackson2ObjectMapper(cls, context.getCharset())
+    JavaType javaType = mapper.constructType(cls)
+    mapper.readValue(object, javaType)
+  }
 }

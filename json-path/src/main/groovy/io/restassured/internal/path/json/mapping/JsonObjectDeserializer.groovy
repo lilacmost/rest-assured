@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,16 @@
 
 package io.restassured.internal.path.json.mapping
 
-import io.restassured.internal.mapper.ObjectDeserializationContextImpl
-import io.restassured.mapper.DataToDeserialize
-import io.restassured.mapper.ObjectDeserializationContext
-import io.restassured.mapper.factory.GsonObjectMapperFactory
-import io.restassured.mapper.factory.Jackson1ObjectMapperFactory
-import io.restassured.mapper.factory.Jackson2ObjectMapperFactory
-import io.restassured.mapper.resolver.ObjectMapperResolver
+import io.restassured.common.mapper.DataToDeserialize
+import io.restassured.common.mapper.ObjectDeserializationContext
+import io.restassured.common.mapper.resolver.ObjectMapperResolver
+import io.restassured.internal.common.mapper.ObjectDeserializationContextImpl
 import io.restassured.path.json.config.JsonParserType
 import io.restassured.path.json.config.JsonPathConfig
+import io.restassured.path.json.mapper.factory.GsonObjectMapperFactory
+import io.restassured.path.json.mapper.factory.Jackson1ObjectMapperFactory
+import io.restassured.path.json.mapper.factory.Jackson2ObjectMapperFactory
+import io.restassured.path.json.mapper.factory.JohnzonObjectMapperFactory
 import org.apache.commons.lang3.Validate
 
 class JsonObjectDeserializer {
@@ -69,6 +70,8 @@ class JsonObjectDeserializer {
             return deserializeWithJackson1(deserializationCtx, jsonPathConfig.jackson1ObjectMapperFactory()) as T
         } else if (ObjectMapperResolver.isGsonInClassPath()) {
             return deserializeWithGson(deserializationCtx, jsonPathConfig.gsonObjectMapperFactory()) as T
+        } else if (ObjectMapperResolver.isJohnzonInClassPath()) {
+            return deserializeWithJohnzon(deserializationCtx, jsonPathConfig.johnzonObjectMapperFactory()) as T
         }
         throw new IllegalStateException("Cannot deserialize object because no JSON deserializer found in classpath. Please put either Jackson (Databind) or Gson in the classpath.")
     }
@@ -80,6 +83,8 @@ class JsonObjectDeserializer {
             return deserializeWithJackson1(ctx, config.jackson1ObjectMapperFactory()) as T
         } else if (mapperType == JsonParserType.GSON && ObjectMapperResolver.isGsonInClassPath()) {
             return deserializeWithGson(ctx, config.gsonObjectMapperFactory()) as T
+        } else if (mapperType == JsonParserType.JOHNZON && ObjectMapperResolver.isJohnzonInClassPath()) {
+            return deserializeWithJohnzon(ctx, config.johnzonObjectMapperFactory()) as T
         } else {
             def lowerCase = mapperType.toString().toLowerCase()
             throw new IllegalArgumentException("Cannot deserialize object using $mapperType because $lowerCase doesn't exist in the classpath.")
@@ -98,4 +103,7 @@ class JsonObjectDeserializer {
         new JsonPathJackson2ObjectDeserializer(factory).deserialize(ctx)
     }
 
+	static def deserializeWithJohnzon(ObjectDeserializationContext ctx, JohnzonObjectMapperFactory factory) {
+		new JsonPathJohnzonObjectDeserializer(factory).deserialize(ctx)
+	}
 }

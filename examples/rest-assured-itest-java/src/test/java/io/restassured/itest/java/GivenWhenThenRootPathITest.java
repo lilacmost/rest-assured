@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,9 @@ public class GivenWhenThenRootPathITest extends WithJetty {
     @Test public void
     given_when_then_works_with_root_path() {
          get("/jsonStore").then().assertThat().
-                 root("store.%s", withArgs("book")).
+                 rootPath("store.%s", withArgs("book")).
                  body("category.size()", equalTo(4)).
-                 appendRoot("%s.%s", withArgs("author", "size()")).
+                 appendRootPath("%s.%s", withArgs("author", "size()")).
                  body(withNoArgs(), equalTo(4));
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public class DoubleITest extends WithJetty {
                 get("/anonymous_list_with_numbers").
         then().
                 statusCode(HttpStatus.SC_OK).
-                content("$", hasItems(100, 50, 31.0d));
+                body("$", hasItems(100, 50, 31.0d));
     }
 
     @Test public void

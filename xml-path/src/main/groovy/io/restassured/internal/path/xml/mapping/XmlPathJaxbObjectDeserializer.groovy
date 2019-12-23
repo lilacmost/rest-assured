@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 
 package io.restassured.internal.path.xml.mapping
 
-import io.restassured.mapper.ObjectDeserializationContext
-import io.restassured.mapper.factory.JAXBObjectMapperFactory
+import io.restassured.common.mapper.ObjectDeserializationContext
+import io.restassured.path.xml.mapper.factory.JAXBObjectMapperFactory
 import io.restassured.path.xml.mapping.XmlPathObjectDeserializer
 
 import javax.xml.bind.JAXBContext
@@ -29,24 +29,25 @@ import javax.xml.transform.stream.StreamSource
 
 class XmlPathJaxbObjectDeserializer implements XmlPathObjectDeserializer {
 
-    private final JAXBObjectMapperFactory factory;
+  private final JAXBObjectMapperFactory factory
 
-    public XmlPathJaxbObjectDeserializer(JAXBObjectMapperFactory factory) {
-        this.factory = factory
+  XmlPathJaxbObjectDeserializer(JAXBObjectMapperFactory factory) {
+    this.factory = factory
+  }
+
+  @Override
+  def deserialize(ObjectDeserializationContext context) {
+    def cls = context.getType()
+    def object = context.getDataToDeserialize().asString()
+    JAXBContext jaxbContext = factory.create(cls, context.getCharset())
+
+    Unmarshaller unmarshaller = jaxbContext.createUnmarshaller()
+    def reader = new StringReader(object)
+    if (cls.isAnnotationPresent(XmlRootElement.class)) {
+      unmarshaller.unmarshal(reader)
+    } else {
+      JAXBElement jaxbElement = unmarshaller.unmarshal(new StreamSource(reader), cls)
+      jaxbElement.getValue()
     }
-
-    def <T> T deserialize(ObjectDeserializationContext context) {
-        def cls = context.getType();
-        def object = context.getDataToDeserialize().asString();
-        JAXBContext jaxbContext = factory.create(cls, context.getCharset())
-
-        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller()
-        def reader = new StringReader(object)
-        if (cls.isAnnotationPresent(XmlRootElement.class)) {
-            return unmarshaller.unmarshal(reader) as T
-        } else {
-            JAXBElement jaxbElement = unmarshaller.unmarshal(new StreamSource(reader), cls)
-            return jaxbElement.getValue() as T
-        }
-    }
+  }
 }

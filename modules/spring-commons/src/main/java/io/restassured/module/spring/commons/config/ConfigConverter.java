@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2018 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,8 @@ public class ConfigConverter {
     public static RestAssuredConfig convertToRestAssuredConfig(SpecificationConfig specificationConfig) {
         return new RestAssuredConfig().jsonConfig(specificationConfig.getJsonConfig()).xmlConfig(specificationConfig.getXmlConfig()).sessionConfig(specificationConfig.getSessionConfig()).
                 objectMapperConfig(specificationConfig.getObjectMapperConfig()).logConfig(specificationConfig.getLogConfig()).encoderConfig(specificationConfig.getEncoderConfig()).
-                decoderConfig(specificationConfig.getDecoderConfig()).multiPartConfig(specificationConfig.getMultiPartConfig()).paramConfig(toParamConfig(specificationConfig.getParamConfig()));
+                decoderConfig(specificationConfig.getDecoderConfig()).multiPartConfig(specificationConfig.getMultiPartConfig()).paramConfig(toParamConfig(specificationConfig.getParamConfig())).
+                matcherConfig(specificationConfig.getMatcherConfig());
     }
 
     private static ParamConfig toParamConfig(ParamConfig baseConfig) {

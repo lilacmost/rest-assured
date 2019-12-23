@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,10 @@
  */
 
 
-
 package io.restassured.internal.path.json.mapping
 
-import io.restassured.mapper.ObjectDeserializationContext
-import io.restassured.mapper.factory.Jackson1ObjectMapperFactory
+import io.restassured.common.mapper.ObjectDeserializationContext
+import io.restassured.path.json.mapper.factory.Jackson1ObjectMapperFactory
 import io.restassured.path.json.mapping.JsonPathObjectDeserializer
 import org.codehaus.jackson.type.JavaType
 
@@ -27,22 +26,22 @@ import java.lang.reflect.Type
 
 class JsonPathJackson1ObjectDeserializer implements JsonPathObjectDeserializer {
 
-    private final Jackson1ObjectMapperFactory factory;
+  private final Jackson1ObjectMapperFactory factory;
 
-    JsonPathJackson1ObjectDeserializer(Jackson1ObjectMapperFactory factory) {
-        this.factory = factory
-    }
+  JsonPathJackson1ObjectDeserializer(Jackson1ObjectMapperFactory factory) {
+    this.factory = factory
+  }
 
-    private org.codehaus.jackson.map.ObjectMapper createJacksonObjectMapper(Type cls, String charset) {
-        return factory.create(cls, charset)
-    }
+  private org.codehaus.jackson.map.ObjectMapper createJacksonObjectMapper(Type cls, String charset) {
+    return factory.create(cls, charset)
+  }
 
-    @Override
-    def <T> T deserialize(ObjectDeserializationContext ctx) {
-        def object = ctx.getDataToDeserialize().asString()
-        def cls = ctx.getType()
-        def mapper = createJacksonObjectMapper(cls, ctx.getCharset())
-        JavaType javaType = mapper.constructType(cls)
-        return mapper.readValue(object, javaType) as T
-    }
+  @Override
+  def deserialize(ObjectDeserializationContext ctx) {
+    def object = ctx.getDataToDeserialize().asString()
+    def cls = ctx.getType()
+    def mapper = createJacksonObjectMapper(cls, ctx.getCharset())
+    JavaType javaType = mapper.constructType(cls)
+    mapper.readValue(object, javaType)
+  }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,15 @@
 
 package io.restassured.scala
 
-import com.squareup.okhttp.mockwebserver.{MockResponse, MockWebServer}
 import io.restassured.RestAssured.given
 import io.restassured.module.scala.RestAssuredSupport.AddThenToResponse
+import okhttp3.mockwebserver.{MockResponse, MockWebServer}
 import org.hamcrest.Matchers.equalTo
 import org.junit.{After, Before, Test}
 
 class ScalaITest {
 
-  var webServer: MockWebServer = null
+  var webServer: MockWebServer = _
 
   @Before
   def `Mock web server is initialized`() {

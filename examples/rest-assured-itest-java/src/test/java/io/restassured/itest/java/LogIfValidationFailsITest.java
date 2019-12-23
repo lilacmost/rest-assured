@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import io.restassured.http.ContentType;
 import io.restassured.itest.java.support.WithJetty;
 import io.restassured.specification.RequestSpecification;
 import org.apache.commons.io.output.WriterOutputStream;
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -137,7 +139,7 @@ public class LogIfValidationFailsITest extends WithJetty {
         then().
                 statusCode(200);
 
-        assertThat(writer.toString(), isEmptyString());
+        assertThat(writer.toString(), emptyString());
     }
 
     @Test
@@ -156,7 +158,7 @@ public class LogIfValidationFailsITest extends WithJetty {
         when().
                 get("/greet");
 
-        assertThat(writer.toString(), isEmptyString());
+        assertThat(writer.toString(), emptyString());
     }
 
     @Test
@@ -217,7 +219,7 @@ public class LogIfValidationFailsITest extends WithJetty {
         then().
                 log().ifValidationFails(LogDetail.BODY).
                 body("fullName", equalTo("John Doe"));
-        assertThat(writer.toString(), isEmptyString());
+        assertThat(writer.toString(), emptyString());
     }
 
     @Test
@@ -235,7 +237,7 @@ public class LogIfValidationFailsITest extends WithJetty {
         when().
                 get("/{firstName}/{lastName}");
 
-        assertThat(writer.toString(), isEmptyString());
+        assertThat(writer.toString(), emptyString());
     }
 
     @Test
@@ -450,7 +452,7 @@ public class LogIfValidationFailsITest extends WithJetty {
 
             fail("Should throw AssertionError");
         } catch (AssertionError e) {
-            assertThat(writer.toString(), isEmptyString());
+            assertThat(writer.toString(), emptyString());
         }
     }
 
@@ -520,7 +522,39 @@ public class LogIfValidationFailsITest extends WithJetty {
 
             fail("Test out to have failed by now");
         } catch (AssertionError e) {
-            assertThat(writer.toString(), not(isEmptyOrNullString()));
+            assertThat(writer.toString(), not(emptyOrNullString()));
+        }
+    }
+
+
+    @Test public void
+    logging_is_applied_when_thrown_assertion_errors_from_matcher_internal() {
+        final StringWriter writer = new StringWriter();
+        final PrintStream captor = new PrintStream(new WriterOutputStream(writer), true);
+
+        try {
+            RestAssured.given().
+                    config(RestAssured.config().logConfig(LogConfig.logConfig().defaultStream(captor).and().enableLoggingOfRequestAndResponseIfValidationFails())).
+                    param("firstName", "John").
+                    param("lastName", "Doe").
+                    when().
+                    get("/greet").
+                    then().
+                    statusCode(new TypeSafeMatcher<Integer>() {
+                        @Override
+                        protected boolean matchesSafely(final Integer actualStatusCode) {
+                            assertThat(400, equalTo(actualStatusCode));
+                            return true;
+                        }
+                        @Override
+                        public void describeTo(final Description description) {
+                            // not relevant here
+                        }
+                    });
+
+            fail("Test out to have failed by now");
+        } catch (AssertionError e) {
+            assertThat(writer.toString(), not(emptyOrNullString()));
         }
     }
 }

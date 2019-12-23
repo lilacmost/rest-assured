@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,7 +105,7 @@ public class DecoderConfigITest extends WithJetty {
         String path = "/mobile";
 
         Response response = expect().statusCode(200).given().relaxedHTTPSValidation()
-                .parameters("Oper_Name", "getConfigInfo",
+                .params("Oper_Name", "getConfigInfo",
                         "Config_Ver", "1.0",
                         "Os_Ver", "5.0.1",
                         "Device_Type", "iPhone OS",
@@ -113,7 +113,7 @@ public class DecoderConfigITest extends WithJetty {
                         "uApp_Id", "MDNR")
                .config(config().decoderConfig(DecoderConfig.decoderConfig().useNoWrapForInflateDecoding(true))).when().get(path);
 
-        assertThat(response.getBody().asString(), not(isEmptyOrNullString()));
+        assertThat(response.getBody().asString(), not(emptyOrNullString()));
     }
 
     @Test public void

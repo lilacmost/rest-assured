@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package io.restassured.response;
 
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.mapper.ObjectMapper;
 import io.restassured.mapper.ObjectMapperType;
 import io.restassured.path.json.JsonPath;
@@ -56,6 +57,14 @@ public interface ResponseBodyExtractionOptions extends ResponseBodyData {
      * @return The object
      */
     <T> T as(Class<T> cls, ObjectMapper mapper);
+
+
+    /**
+     * Get the body as a container with a generic type. Note that this may not work for JAXB (XML) or HTML.
+     *
+     * @return The object
+     */
+    <T> T as(TypeRef<T> typeRef);
 
     /**
      * Get the body and map it to a Java type with specified type. For JSON responses this requires that you have either

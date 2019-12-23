@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@
 package io.restassured.builder;
 
 import io.restassured.RestAssured;
+import io.restassured.config.LogConfig;
 import io.restassured.config.RestAssuredConfig;
+import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.internal.ResponseParserRegistrar;
 import io.restassured.internal.ResponseSpecificationImpl;
@@ -35,6 +37,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static io.restassured.RestAssured.rootPath;
+import static io.restassured.internal.common.assertion.AssertParameter.notNull;
 
 /**
  * You can use the builder to construct a response specification. The specification can be used as e.g.
@@ -61,89 +64,6 @@ public class ResponseSpecBuilder {
 
     public ResponseSpecBuilder() {
         spec = new ResponseSpecificationImpl(rootPath, null, getResponseParserRegistrar(), restAssuredConfig(), new LogRepository());
-    }
-
-    /**
-     * Expect that the response content conforms to one or more Hamcrest matchers.
-     *
-     * @param matcher The hamcrest matcher that must response content must match.
-     * @return The builder
-     * @deprecated Use {@link #expectBody(Matcher)} instead
-     */
-    @Deprecated
-    public ResponseSpecBuilder expectContent(Matcher<?> matcher) {
-        spec.content(matcher);
-        return this;
-    }
-
-    /**
-     * Expect that the JSON or XML response content conforms to one or more Hamcrest matchers.<br>
-     * <h3>JSON example</h3>
-     * <p/>
-     * Assume that a GET request to "/lotto" returns a JSON response containing:
-     * <pre>
-     * { "lotto":{
-     *   "lottoId":5,
-     *   "winning-numbers":[2,45,34,23,7,5,3],
-     *   "winners":[{
-     *     "winnerId":23,
-     *     "numbers":[2,45,34,23,3,5]
-     *   },{
-     *     "winnerId":54,
-     *     "numbers":[52,3,12,11,18,22]
-     *   }]
-     *  }}
-     * </pre>
-     * <p/>
-     * You can verify that the lottoId is equal to 5 like this:
-     * <pre>
-     * ResponseSpecBuilder builder = new ResponseSpecBuilder();
-     * builder.expectContent("lotto.lottoId", equalTo(5));
-     * </pre>
-     *
-     * @param matcher The hamcrest matcher that the response content must match.
-     * @return The builder
-     * @deprecated Use {@link #expectBody(String, Matcher)} instead
-     */
-    @Deprecated
-    public ResponseSpecBuilder expectContent(String path, Matcher<?> matcher) {
-        spec.content(path, matcher);
-        return this;
-    }
-
-    /**
-     * Same as {@link #expectContent(String, org.hamcrest.Matcher)} expect that you can pass arguments to the path. This
-     * is useful in situations where you have e.g. pre-defined variables that constitutes the path:
-     * <pre>
-     * String someSubPath = "else";
-     * int index = 1;
-     * expect().body("something.%s[%d]", withArgs(someSubPath, index), equalTo("some value")). ..
-     * </pre>
-     * <p/>
-     * or if you have complex root paths and don't wish to duplicate the path for small variations:
-     * <pre>
-     * expect().
-     *          root("filters.filterConfig[%d].filterConfigGroups.find { it.name == 'Gold' }.includes").
-     *          body(withArgs(0), hasItem("first")).
-     *          body(withArgs(1), hasItem("second")).
-     *          ..
-     * </pre>
-     * <p/>
-     * The path and arguments follows the standard <a href="http://download.oracle.com/javase/1,5.0/docs/api/java/util/Formatter.html#syntax">formatting syntax</a> of Java.
-     * <p>
-     * Note that <code>withArgs</code> can be statically imported from the <code>io.restassured.RestAssured</code> class.
-     * </p>
-     *
-     * @param path    The body path
-     * @param matcher The hamcrest matcher that must response body must match.
-     * @return the response specification
-     * @see #expectBody(String, Matcher)
-     * @deprecated Use {@link #expectBody(String, List, Matcher)} instead
-     */
-    @Deprecated
-    public ResponseSpecBuilder expectContent(String path, List<Argument> arguments, Matcher<?> matcher) {
-        spec.content(path, arguments, matcher);
-        return this;
     }
 
     /**
@@ -396,10 +316,10 @@ public class ResponseSpecBuilder {
      *
      * @param rootPath  The root path to use.
      * @param arguments The arguments.
-     * @see ResponseSpecification#rootPath(String, java.util.List)
+     * @see ResponseSpecification#root(String, java.util.List)
      */
     public ResponseSpecBuilder rootPath(String rootPath, List<Argument> arguments) {
-        spec.rootPath(rootPath, arguments);
+        spec.root(rootPath, arguments);
         return this;
     }
 
@@ -434,7 +354,7 @@ public class ResponseSpecBuilder {
      * @param pathToAppend The root path to append.
      */
     public ResponseSpecBuilder appendRootPath(String pathToAppend) {
-        spec.appendRoot(pathToAppend);
+        spec.appendRootPath(pathToAppend);
         return this;
     }
 
@@ -472,7 +392,7 @@ public class ResponseSpecBuilder {
      * @param pathToAppend The root path to use. The path and arguments follows the standard <a href="http://download.oracle.com/javase/1,5.0/docs/api/java/util/Formatter.html#syntax">formatting syntax</a> of Java.
      */
     public ResponseSpecBuilder appendRootPath(String pathToAppend, List<Argument> arguments) {
-        spec.appendRoot(pathToAppend, arguments);
+        spec.appendRootPath(pathToAppend, arguments);
         return this;
     }
 
@@ -533,7 +453,7 @@ public class ResponseSpecBuilder {
      * @param pathToDetach The root path to detach.
      */
     public ResponseSpecBuilder detachRootPath(String pathToDetach) {
-        spec.detachRoot(pathToDetach);
+        spec.detachRootPath(pathToDetach);
         return this;
     }
 
@@ -671,6 +591,18 @@ public class ResponseSpecBuilder {
 
         ResponseSpecificationImpl rs = (ResponseSpecificationImpl) specification;
         SpecificationMerger.merge((ResponseSpecificationImpl) spec, rs);
+        return this;
+    }
+
+    /**
+     * Enabled logging with the specified log detail. Set a {@link LogConfig} to configure the print stream and pretty printing options.
+     *
+     * @param logDetail The log detail.
+     * @return ResponseSpecBuilder
+     */
+    public ResponseSpecBuilder log(LogDetail logDetail) {
+        notNull(logDetail, LogDetail.class);
+        spec.logDetail(logDetail);
         return this;
     }
 

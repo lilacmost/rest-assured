@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,16 @@ import groovy.lang.GroovyRuntimeException;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
 import groovy.xml.XmlUtil;
-import io.restassured.internal.assertion.AssertParameter;
-import io.restassured.internal.path.ObjectConverter;
+import io.restassured.internal.common.assertion.AssertParameter;
+import io.restassured.internal.common.path.ObjectConverter;
 import io.restassured.internal.path.xml.*;
 import io.restassured.internal.path.xml.mapping.XmlObjectDeserializer;
-import io.restassured.mapper.factory.JAXBObjectMapperFactory;
 import io.restassured.path.xml.config.XmlParserType;
 import io.restassured.path.xml.config.XmlPathConfig;
 import io.restassured.path.xml.element.Node;
 import io.restassured.path.xml.element.NodeChildren;
 import io.restassured.path.xml.exception.XmlPathException;
+import io.restassured.path.xml.mapper.factory.JAXBObjectMapperFactory;
 import org.apache.commons.lang3.Validate;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
@@ -415,7 +415,8 @@ public class XmlPath {
             throw new IllegalStateException("Internal error: XML object was not an instance of String, please report to the REST Assured mailing-list.");
         }
 
-        return XmlObjectDeserializer.deserialize((String) object, objectType, cfg);
+        //noinspection RedundantCast
+        return (T) XmlObjectDeserializer.deserialize((String) object, objectType, cfg);
     }
 
     private <T> T getFromPath(String path, boolean convertToJavaObject) {
@@ -426,6 +427,7 @@ public class XmlPath {
         }
         final String root = rootPath.equals("") ? rootPath : rootPath.endsWith(".") ? rootPath : rootPath + ".";
         xmlAssertion.setKey(root + path);
+        //noinspection unchecked
         return (T) xmlAssertion.getResult(input, convertToJavaObject, true);
     }
 
@@ -849,8 +851,24 @@ public class XmlPath {
      * </pre>
      *
      * @param rootPath The root path to use.
+     * @deprecated Use {@link #setRootPath(String)} instead
      */
+    @Deprecated
     public XmlPath setRoot(String rootPath) {
+        return setRootPath(rootPath);
+    }
+
+    /**
+     * Set the root path of the document so that you don't need to write the entire path. E.g.
+     * <pre>
+     * final XmlPath xmlPath = new XmlPath(XML).setRootPath("shopping.category.item");
+     * assertThat(xmlPath.getInt("size()"), equalTo(5));
+     * assertThat(xmlPath.getList("children().list()", String.class), hasItem("Pens"));
+     * </pre>
+     *
+     * @param rootPath The root path to use.
+     */
+    public XmlPath setRootPath(String rootPath) {
         AssertParameter.notNull(rootPath, "Root path");
         this.rootPath = rootPath;
         return this;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public class SpecificationsDemoITest extends WithJetty {
                 addQueryParam("category", "books").addCookie("user", "admin").build();
 
         given().
-                 specification(books).
+                 spec(books).
         expect().
                  body(equalTo("Catch 22")).
         when().
@@ -50,7 +50,7 @@ public class SpecificationsDemoITest extends WithJetty {
         given().
                  param("name", "John Doe").
         expect().
-                 specification(spec).
+                 spec(spec).
                  body("firstName", is("John")).
                  body("lastName", is("Doe")).
         when().
@@ -67,7 +67,7 @@ public class SpecificationsDemoITest extends WithJetty {
         when().
                  get("/demoResponseSpecification").
         then().
-                 specification(spec).
+                 spec(spec).
                  body("firstName", is("John")).
                  body("lastName", is("Doe"));
     }

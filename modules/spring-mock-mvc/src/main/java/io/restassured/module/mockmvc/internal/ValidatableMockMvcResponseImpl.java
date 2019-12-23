@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,13 @@ package io.restassured.module.mockmvc.internal;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.internal.ResponseParserRegistrar;
 import io.restassured.internal.ValidatableResponseOptionsImpl;
-import io.restassured.internal.assertion.AssertParameter;
+import io.restassured.internal.common.assertion.AssertParameter;
 import io.restassured.internal.log.LogRepository;
 import io.restassured.internal.util.SafeExceptionRethrower;
 import io.restassured.module.mockmvc.response.MockMvcResponse;
 import io.restassured.module.mockmvc.response.ValidatableMockMvcResponse;
 import io.restassured.response.ExtractableResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultHandler;
 import org.springframework.test.web.servlet.ResultMatcher;
@@ -70,6 +71,11 @@ public class ValidatableMockMvcResponseImpl extends ValidatableResponseOptionsIm
                 SafeExceptionRethrower.safeRethrow(e);
             }
         }
+        return this;
+    }
+
+    public ValidatableMockMvcResponse status(HttpStatus expectedStatus) {
+        statusCode(expectedStatus.value());
         return this;
     }
 

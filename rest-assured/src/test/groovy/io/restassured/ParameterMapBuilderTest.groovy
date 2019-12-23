@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,27 +21,47 @@ package io.restassured
 import io.restassured.authentication.NoAuthScheme
 import io.restassured.internal.RequestSpecificationImpl
 import io.restassured.internal.log.LogRepository
+import io.restassured.specification.Argument
+import io.restassured.specification.RequestSpecification
 import org.junit.Before
 import org.junit.Test
 
+import static io.restassured.RestAssured.withArgs
+import static org.assertj.core.api.Assertions.assertThat
+import static org.assertj.core.api.Assertions.catchThrowable
+import static org.hamcrest.Matchers.equalTo
 import static org.junit.Assert.assertEquals
 
 class ParameterMapBuilderTest {
   private RequestSpecificationImpl requestBuilder;
 
   @Before
-  public void setup() throws Exception {
+  void setup() throws Exception {
     requestBuilder = new RequestSpecificationImpl("baseURI", 20, "", new NoAuthScheme(), [], null, true, null, new LogRepository(), null);
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  def void mapThrowIAEWhenOddNumberOfStringsAreSupplied() throws Exception {
-    requestBuilder.parameters("key1", "value1", "key2");
+  @Test
+  void mapThrowIAEWhenOddNumberOfStringsAreSupplied() throws Exception {
+    def throwable = catchThrowable { requestBuilder.params("key1", "value1", "key2") }
+    assertThat(throwable).isExactlyInstanceOf(IllegalArgumentException.class).hasMessage("You must supply the same number of keys as values.")
+  }
+
+  // Does RA really handle conversion from map with multi-value parameters correctly?
+  @Test
+  void doesntThrowWhenSecondParameterIsAMap() throws Exception {
+    def map = requestBuilder.params("key1", ["value1"]).requestParameters
+    assertThat(map).hasSize(1)
   }
 
   @Test
-  def void mapBuildsAMapBasedOnTheSuppliedKeysAndValues() throws Exception {
-    def map = requestBuilder.parameters("key1", "value1", "key2", "value2").requestParameters;
+  void mapThrowIAEWhenMixingArgumentsAndNoArguments() throws Exception {
+    def throwable = catchThrowable { requestBuilder.params("key1", withArgs("hello"), "key2", "key", equalTo("2")) }
+    assertThat(throwable).isExactlyInstanceOf(IllegalArgumentException.class).hasMessage("You must supply the same number of keys as values.")
+  }
+
+  @Test
+  void mapBuildsAMapBasedOnTheSuppliedKeysAndValues() throws Exception {
+    def map = requestBuilder.params("key1", "value1", "key2", "value2").requestParameters;
 
     assertEquals 2, map.size()
     assertEquals "value1", map.get("key1")
@@ -49,32 +69,32 @@ class ParameterMapBuilderTest {
   }
 
   @Test
-  def void removesParamOnRemoveParamMethod() throws Exception {
-    requestBuilder.parameters("key1", "value1");
+  void removesParamOnRemoveParamMethod() throws Exception {
+    requestBuilder.params("key1", "value1");
     def map = requestBuilder.removeParam("key1").requestParameters
 
     assertEquals 0, map.size()
   }
 
   @Test
-  def void removesQueryParamOnRemoveQueryParamMethod() throws Exception {
-    requestBuilder.queryParameters("key1", "value1");
+  void removesQueryParamOnRemoveQueryParamMethod() throws Exception {
+    requestBuilder.queryParams("key1", "value1");
     def map = requestBuilder.removeQueryParam("key1").queryParameters
 
     assertEquals 0, map.size()
   }
 
   @Test
-  def void removesFormParamOnRemoveFormParamMethod() throws Exception {
-    requestBuilder.queryParameters("key1", "value1");
+  void removesFormParamOnRemoveFormParamMethod() throws Exception {
+    requestBuilder.queryParams("key1", "value1");
     def map = requestBuilder.removeFormParam("key1").formParameters
 
     assertEquals 0, map.size()
   }
 
   @Test
-  def void removesPathParamOnRemoveFormPathMethod() throws Exception {
-    requestBuilder.pathParameters("key1", "value1");
+  void removesPathParamOnRemoveFormPathMethod() throws Exception {
+    requestBuilder.pathParams("key1", "value1");
     def map = requestBuilder.removePathParam("key1").namedPathParameters
 
     assertEquals 0, map.size()

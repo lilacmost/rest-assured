@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,13 @@
 package io.restassured.module.webtestclient.specification;
 
 import io.restassured.config.SessionConfig;
-import io.restassured.http.ContentType;
-import io.restassured.http.Cookie;
-import io.restassured.http.Cookies;
-import io.restassured.http.Header;
-import io.restassured.http.Headers;
+import io.restassured.http.*;
 import io.restassured.mapper.ObjectMapper;
 import io.restassured.mapper.ObjectMapperType;
 import io.restassured.module.spring.commons.config.SpecificationConfig;
 import io.restassured.module.webtestclient.config.RestAssuredWebTestClientConfig;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.reactive.server.WebTestClientConfigurer;
 import org.springframework.web.context.WebApplicationContext;
@@ -72,6 +69,20 @@ public interface WebTestClientRequestSpecification extends WebTestClientRequestS
 	 * @see #header(String, Object, Object...)
 	 */
 	WebTestClientRequestSpecification accept(ContentType contentType);
+
+	/**
+	 * Specify the accept header of the request. This just a shortcut for:
+	 * <pre>
+	 * header("Accept", contentType);
+	 * </pre>
+	 *
+	 * @param mediaTypes The media type(s) that will be used as Accept header in the request.
+	 * @return The request specification
+	 *
+	 * @see ContentType
+	 * @see #header(String, Object, Object...)
+	 */
+	WebTestClientRequestSpecification accept(MediaType... mediaTypes);
 
 	/**
 	 * Specify the accept header of the request. This just a shortcut for:

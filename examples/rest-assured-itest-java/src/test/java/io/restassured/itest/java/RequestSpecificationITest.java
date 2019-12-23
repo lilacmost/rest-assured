@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,5 +48,24 @@ public class RequestSpecificationITest {
         } finally {
             RestAssured.reset();
         }
+    }
+
+    @Test
+    public void default_port_keeps_undefined_for_non_localhost() {
+        given().spec(new RequestSpecBuilder().build())
+            .baseUri("http://nonlocal.com/api")
+            .filter((requestSpec, responseSpec, ctx) -> {
+                assertThat(requestSpec.getPort(), is(RestAssured.UNDEFINED_PORT));
+                return new ResponseBuilder().setStatusCode(200).build();
+            }).when().get();
+    }
+
+    @Test
+    public void default_port_for_localhost() {
+        given().spec(new RequestSpecBuilder().build())
+            .filter((requestSpec, responseSpec, ctx) -> {
+                assertThat(requestSpec.getPort(), is(RestAssured.DEFAULT_PORT));
+                return new ResponseBuilder().setStatusCode(200).build();
+            }).when().get();
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,15 @@
 
 package io.restassured.itest.java;
 
-import io.restassured.itest.java.support.WithJetty;
 import io.restassured.config.RestAssuredConfig;
+import io.restassured.itest.java.support.WithJetty;
 import org.junit.Test;
 
 import static io.restassured.RestAssured.expect;
 import static io.restassured.RestAssured.given;
 import static io.restassured.config.XmlConfig.xmlConfig;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.text.IsEmptyString.isEmptyString;
+import static org.hamcrest.text.IsEmptyString.emptyString;
 
 public class NamespaceExpectationsITest extends WithJetty {
 
@@ -82,7 +82,7 @@ public class NamespaceExpectationsITest extends WithJetty {
         expect().
                 body("foo.bar.text()", equalTo("sudo make me a sandwich!")).
                 body(":foo.:bar.text()", equalTo("sudo ")).
-                body("foo.ns:bar.text()", isEmptyString()).
+                body("foo.ns:bar.text()", emptyString()).
         when().
                 get("/namespace-example");
     }

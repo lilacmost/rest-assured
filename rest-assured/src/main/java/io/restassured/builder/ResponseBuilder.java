@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package io.restassured.builder;
 
+import io.restassured.config.RestAssuredConfig;
 import io.restassured.filter.Filter;
 import io.restassured.http.ContentType;
 import io.restassured.http.Cookies;
@@ -30,7 +31,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.restassured.internal.assertion.AssertParameter.notNull;
+import static io.restassured.internal.common.assertion.AssertParameter.notNull;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.trim;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
@@ -217,6 +218,10 @@ public class ResponseBuilder {
             restAssuredResponse.setStatusLine(restAssuredResponse.statusCode());
         }
 
+        // Set a default config
+        if (restAssuredResponse.getConfig() == null) {
+            restAssuredResponse.setConfig(RestAssuredConfig.config());
+        }
         restAssuredResponse.setRpr(new ResponseParserRegistrar());
         return restAssuredResponse;
     }
